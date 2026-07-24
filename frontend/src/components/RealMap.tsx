@@ -15,20 +15,29 @@ import L from "leaflet"
 
 
 
-const icon = L.icon({
 
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
 
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+// =========================
+// ICONO RECOGIDA
+// =========================
 
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+const pickupIcon = L.divIcon({
 
-  iconSize:[25,41],
+  html:`
 
-  iconAnchor:[12,41]
+  <div class="map-pin pickup-pin">
+
+    <span>📦</span>
+
+  </div>
+
+  `,
+
+  className:"",
+
+  iconSize:[45,45],
+
+  iconAnchor:[22,45]
 
 })
 
@@ -39,17 +48,65 @@ const icon = L.icon({
 
 
 
+
+// =========================
+// ICONO ENTREGA
+// =========================
+
+const destinationIcon = L.divIcon({
+
+  html:`
+
+  <div class="map-pin destination-pin">
+
+    <span>⚑</span>
+
+  </div>
+
+  `,
+
+  className:"",
+
+  iconSize:[45,45],
+
+  iconAnchor:[22,45]
+
+})
+
+
+
+
+
+
+
+
+
+// =========================
+// ICONO MENSAJERO
+// =========================
+
 const messengerIcon = L.divIcon({
 
-  html:"🛵",
+  html:`
 
-  className:"messenger-icon",
+  <div class="map-pin messenger-pin">
 
-  iconSize:[35,35],
+    <span>🛵</span>
 
-  iconAnchor:[17,17]
+  </div>
 
-}) as L.DivIcon
+  `,
+
+  className:"",
+
+  iconSize:[45,45],
+
+  iconAnchor:[22,22]
+
+})
+
+
+
 
 
 
@@ -97,6 +154,10 @@ type Props = {
 
 
 
+// =========================
+// CONTROL DEL MAPA
+// =========================
+
 function MapClick({
 
 
@@ -122,12 +183,9 @@ let newPoints=[...points]
 
 
 
-
 if(newPoints.length >= 2){
 
-
 newPoints=[]
-
 
 }
 
@@ -135,15 +193,11 @@ newPoints=[]
 
 
 
-
 newPoints.push({
-
 
 lat:e.latlng.lat,
 
-
 lng:e.latlng.lng
-
 
 })
 
@@ -160,6 +214,7 @@ onChange(newPoints)
 
 
 })
+
 
 
 
@@ -204,18 +259,14 @@ onChange
 
 
 
-
-
 const havana:[number,number]=[
-
 
 23.1136,
 
-
 -82.3666
 
-
 ]
+
 
 
 
@@ -229,14 +280,13 @@ const routePositions:[number,number][] =
 
 route.map(point=>[
 
-
 point.lat,
-
 
 point.lng
 
-
 ])
+
+
 
 
 
@@ -281,8 +331,8 @@ points[1].lng
 
 :
 
-
 []
+
 
 
 
@@ -313,36 +363,41 @@ zoom={13}
 
 style={{
 
-
 height:"550px",
-
 
 width:"100%",
 
-
 borderRadius:"15px"
 
-
 }}
+
 
 
 >
 
 
 
+
+
+
+
+
+
+{/* MAPA OSCURO VOLANDO */}
+
+
 <TileLayer
 
 
-
-attribution="OpenStreetMap"
-
+attribution="© OpenStreetMap"
 
 
-url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-
+url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 
 
 />
+
+
 
 
 
@@ -369,7 +424,12 @@ onChange={onChange}
 
 
 
+
+
+
+
 {
+
 points.map((point,index)=>(
 
 
@@ -392,7 +452,19 @@ point.lng
 
 
 
-icon={icon}
+icon={
+
+index===0
+
+?
+
+pickupIcon
+
+:
+
+destinationIcon
+
+}
 
 
 
@@ -406,18 +478,13 @@ icon={icon}
 
 index===0
 
-
 ?
 
-
-"📦 Punto recogida"
-
+"📦 Punto de recogida"
 
 :
 
-
-"🏁 Punto entrega"
-
+"⚑ Punto de entrega"
 
 }
 
@@ -445,22 +512,43 @@ index===0
 
 
 
+
+{/* RUTA REAL */}
+
+
 {
 
 routePositions.length>0 && (
 
 
+
 <Polyline
+
 
 
 positions={routePositions}
 
 
+
+pathOptions={{
+
+
+color:"#38bdf8",
+
+weight:6,
+
+opacity:0.95
+
+
+}}
+
+
+
 />
 
 
-)
 
+)
 
 }
 
@@ -470,6 +558,13 @@ positions={routePositions}
 
 
 
+
+
+
+
+
+
+{/* LINEA TEMPORAL */}
 
 
 {
@@ -479,17 +574,36 @@ routePositions.length===0 &&
 linePositions.length===2 && (
 
 
+
 <Polyline
+
 
 
 positions={linePositions}
 
 
+
+pathOptions={{
+
+
+color:"#2563eb",
+
+weight:4,
+
+dashArray:"10,10",
+
+opacity:0.8
+
+
+}}
+
+
+
 />
 
 
-)
 
+)
 
 }
 
@@ -503,7 +617,10 @@ positions={linePositions}
 
 
 
-// Mensajero GPS
+
+
+{/* MENSAJERO GPS */}
+
 
 {
 
@@ -517,12 +634,9 @@ messengerLocation && (
 
 position={[
 
-
 messengerLocation.lat,
 
-
 messengerLocation.lng
-
 
 ]}
 
@@ -537,9 +651,7 @@ icon={messengerIcon}
 
 <Popup>
 
-
 🛵 Mensajero en ruta
-
 
 </Popup>
 
@@ -555,6 +667,12 @@ icon={messengerIcon}
 
 
 
+
+
+
+
+
+
 </MapContainer>
 
 
@@ -563,8 +681,6 @@ icon={messengerIcon}
 
 
 }
-
-
 
 
 

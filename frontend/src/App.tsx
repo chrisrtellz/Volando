@@ -10,13 +10,19 @@ import {
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+
 import Client from './pages/Client'
 import Messenger from './pages/Messenger'
 import Admin from './pages/Admin'
 
+import ClientPanel from './pages/ClientPanel'
+import MessengerPanel from './pages/MessengerPanel'
+
 
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ProtectedAdmin from "./components/auth/ProtectedAdmin"
+
+
 
 
 
@@ -77,6 +83,9 @@ function App() {
 
 
 
+        {/* CLIENTE - SOLICITAR ENVIOS */}
+
+
         <Route
 
 
@@ -107,7 +116,41 @@ function App() {
 
 
 
+        {/* PANEL CLIENTE */}
 
+
+        <Route
+
+
+          path="/client-panel"
+
+
+          element={
+
+
+            <ProtectedRoute>
+
+
+              <ClientPanel />
+
+
+            </ProtectedRoute>
+
+
+          }
+
+
+        />
+
+
+
+
+
+
+
+
+
+        {/* MENSAJERO - TRABAJO */}
 
 
         <Route
@@ -139,6 +182,43 @@ function App() {
 
 
 
+
+
+        {/* PANEL MENSAJERO */}
+
+
+        <Route
+
+
+          path="/messenger-panel"
+
+
+          element={
+
+
+            <ProtectedRoute>
+
+
+              <MessengerPanel />
+
+
+            </ProtectedRoute>
+
+
+          }
+
+
+        />
+
+
+
+
+
+
+
+
+
+        {/* ADMIN */}
 
 
         <Route

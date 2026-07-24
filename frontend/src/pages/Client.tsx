@@ -24,8 +24,14 @@ import {
 
 
 import {
-  getUsers
-} from "../data/users"
+  getFirebaseUsers
+} from "../data/firebaseUsers"
+
+
+import type {
+  FirebaseUser
+} from "../data/firebaseUsers"
+
 
 
 import {
@@ -42,6 +48,7 @@ import {
 
 
 
+
 function Client(){
 
 
@@ -50,43 +57,68 @@ const user = getCurrentUser()
 
 
 
-const [users,setUsers]=useState(
 
-getUsers()
 
-)
+const [users,setUsers] = useState<FirebaseUser[]>([])
 
 
 
+const [distance,setDistance] = useState(0)
 
 
-const [distance,setDistance]=useState(0)
+const [price,setPrice] = useState(0)
 
 
-const [price,setPrice]=useState(0)
-
-
-const [searching,setSearching]=useState(false)
-
-
-
-const [orderId,setOrderId]=useState<number|null>(null)
+const [searching,setSearching] = useState(false)
 
 
 
-const [currentOrder,setCurrentOrder]=useState<any>(null)
+const [orderId,setOrderId] = useState<number|null>(null)
 
 
 
-const [points,setPoints]=useState<any[]>([])
+const [currentOrder,setCurrentOrder] = useState<any>(null)
 
 
 
-const [routePoints,setRoutePoints]=useState<any[]>([])
+const [points,setPoints] = useState<any[]>([])
 
 
 
-const [addresses,setAddresses]=useState<string[]>([])
+const [routePoints,setRoutePoints] = useState<any[]>([])
+
+
+
+const [addresses,setAddresses] = useState<string[]>([])
+
+
+
+
+
+
+
+async function loadUsers(){
+
+  try{
+
+    const data = await getFirebaseUsers()
+
+    setUsers(data)
+
+  }
+
+  catch(error){
+
+    console.error(
+      "Error cargando usuarios",
+      error
+    )
+
+  }
+
+}
+
+
 
 
 
@@ -118,7 +150,7 @@ null
 
 
 
-// Recuperar pedido guardado
+
 
 
 useEffect(()=>{
@@ -158,7 +190,34 @@ o=>o.id===id
 
 
 
-if(order && order.status !== "Entregado"){
+// SI EL PEDIDO FUE BORRADO EN FIREBASE
+
+if(!order){
+
+
+localStorage.removeItem(
+
+"clientOrder"
+
+)
+
+
+setOrderId(null)
+
+setCurrentOrder(null)
+
+setSearching(false)
+
+
+return
+
+}
+
+
+
+
+
+if(order.status !== "Entregado"){
 
 
 
@@ -194,6 +253,8 @@ localStorage.removeItem(
 
 
 
+loadUsers()
+
 loadOrder()
 
 
@@ -210,8 +271,7 @@ loadOrder()
 
 
 
-
-// Ruta
+// CALCULAR RUTA
 
 
 async function calculateRoute(
@@ -286,7 +346,7 @@ route.coordinates
 
 
 
-// Mapa
+// CAMBIO MAPA
 
 
 async function handleMapChange(
@@ -301,7 +361,9 @@ setPoints(newPoints)
 
 
 
-calculateRoute(newPoints)
+await calculateRoute(newPoints)
+
+
 
 
 
@@ -322,6 +384,7 @@ point.lat,
 point.lng
 
 )
+
 
 
 )
@@ -348,7 +411,8 @@ setAddresses(names)
 
 
 
-// Crear pedido
+
+// CREAR PEDIDO
 
 
 async function sendOrder(){
@@ -380,6 +444,7 @@ return
 
 
 
+
 if(!user){
 
 
@@ -402,6 +467,7 @@ return
 
 
 const id = Date.now()
+
 
 
 
@@ -465,6 +531,7 @@ status:
 
 
 
+
 setCurrentOrder(null)
 
 
@@ -499,7 +566,7 @@ setSearching(true)
 
 
 
-// Escuchar cambios Firebase
+// ESCUCHAR PEDIDO
 
 
 useEffect(()=>{
@@ -507,6 +574,10 @@ useEffect(()=>{
 
 
 const timer=setInterval(async()=>{
+
+
+
+try{
 
 
 
@@ -528,11 +599,36 @@ o=>o.id===orderId
 
 
 
-if(order){
+// PEDIDO BORRADO
+
+if(!order){
+
+
+localStorage.removeItem(
+
+"clientOrder"
+
+)
+
+
+setOrderId(null)
+
+setCurrentOrder(null)
+
+setSearching(false)
+
+
+return
+
+}
+
+
 
 
 
 setCurrentOrder(order)
+
+
 
 
 
@@ -543,6 +639,8 @@ setSearching(false)
 
 
 }
+
+
 
 
 
@@ -560,25 +658,27 @@ localStorage.removeItem(
 
 
 
+
+
 }
 
 
 
+await loadUsers()
+
+
+
+}
+
+catch(error){
+
+console.error(error)
+
 }
 
 
 
-
-
-setUsers(
-
-getUsers()
-
-)
-
-
-
-},2000)
+},3000)
 
 
 
@@ -600,18 +700,27 @@ return()=>clearInterval(timer)
 
 
 
+
+
+
 return(
 
 <>
 
+
 <Navbar />
+
 
 
 <main className="client-page">
 
 
 
+
+
 <section className="client-form">
+
+
 
 
 
@@ -623,11 +732,15 @@ Hola {user?.name} 👋
 
 
 
+
+
 <h2>
 
 Solicitar envío
 
 </h2>
+
+
 
 
 
@@ -673,7 +786,11 @@ addresses[1] &&
 }
 
 
+
 </div>
+
+
+
 
 
 
@@ -713,7 +830,12 @@ CUP
 </p>
 
 
+
 </div>
+
+
+
+
 
 
 
@@ -729,6 +851,7 @@ currentOrder?.status==="Buscando mensajero"
 &&
 
 <div className="searching-box">
+
 
 <h2>
 
@@ -746,7 +869,12 @@ Tu pedido está disponible.
 
 </div>
 
+
 }
+
+
+
+
 
 
 
@@ -780,6 +908,7 @@ Mensajero:
 </p>
 
 
+
 <p>
 
 🚘
@@ -797,9 +926,14 @@ currentOrder.messengerVehicle ||
 </p>
 
 
+
 </div>
 
+
 }
+
+
+
 
 
 
@@ -833,7 +967,11 @@ está recogiendo tu envío.
 
 </div>
 
+
 }
+
+
+
 
 
 
@@ -867,7 +1005,10 @@ Mensajero:
 
 </div>
 
+
 }
+
+
 
 
 
@@ -900,7 +1041,9 @@ Pedido completado.
 
 </div>
 
+
 }
+
 
 
 
@@ -932,7 +1075,10 @@ Solicitar mensajero
 
 
 
+
+
 </section>
+
 
 
 
@@ -956,15 +1102,11 @@ Mapa de La Habana
 
 <RealMap
 
-
 points={points}
-
 
 route={routePoints}
 
-
 onChange={handleMapChange}
-
 
 />
 
@@ -976,7 +1118,10 @@ onChange={handleMapChange}
 
 
 
+
+
 </main>
+
 
 
 </>

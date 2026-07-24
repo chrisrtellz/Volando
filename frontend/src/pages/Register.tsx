@@ -1,7 +1,19 @@
 import Navbar from '../components/Navbar'
 import { useState } from 'react'
-import { createUser, getUsers } from '../data/users'
 import { useNavigate } from 'react-router-dom'
+
+import {
+  createUserWithEmailAndPassword
+} from "firebase/auth"
+
+import {
+  auth
+} from "../firebase/auth"
+
+import {
+  createFirebaseUser
+} from "../data/firebaseUsers"
+
 
 
 function Register() {
@@ -18,7 +30,9 @@ function Register() {
   const [password,setPassword] = useState("")
 
 
-  const [role,setRole] = useState<"cliente" | "mensajero">("cliente")
+  const [role,setRole] = useState<
+    "cliente" | "mensajero"
+  >("cliente")
 
 
 
@@ -38,11 +52,9 @@ function Register() {
 
   ){
 
-
     setVehicle(name)
 
     setVehicleMultiplier(multiplier)
-
 
   }
 
@@ -54,26 +66,20 @@ function Register() {
 
 
 
-  function register(){
+  async function register(){
 
 
 
     if(
-
       !name ||
-
       !email ||
-
       !password
-
     ){
-
 
       alert(
         "Completa todos los campos"
       )
 
-
       return
 
     }
@@ -85,19 +91,15 @@ function Register() {
 
 
     if(
-
-      role === "mensajero" &&
-
-      vehicle === ""
+      role==="mensajero" &&
+      vehicle===""
 
     ){
-
 
       alert(
         "Selecciona un vehículo"
       )
 
-
       return
 
     }
@@ -108,92 +110,127 @@ function Register() {
 
 
 
-    const exists = getUsers().find(
-
-      user => user.email === email
-
-    )
+    try{
 
 
 
+      // Crear usuario en Firebase Authentication
+
+      const result =
+        await createUserWithEmailAndPassword(
+
+          auth,
+
+          email,
+
+          password
+
+        )
 
 
 
-    if(exists){
+
+
+      const uid = result.user.uid
+
+
+
+
+
+
+      // Guardar perfil en Firestore
+
+      await createFirebaseUser({
+
+        id:Date.now(),
+
+        uid,
+
+        name,
+
+        email,
+
+        role,
+
+        vehicle,
+
+        vehicleMultiplier,
+
+        available:false,
+
+        active:true
+
+      })
+
+
+
+
+
 
 
       alert(
-        "Ese correo ya está registrado"
+
+        "Cuenta creada correctamente"
+
       )
 
 
-      return
+
+
+
+      navigate("/login")
+
+
+
 
 
     }
 
+    catch(error:any){
 
 
 
+      console.error(error)
 
 
 
+      if(
+        error.code ===
+        "auth/email-already-in-use"
+      ){
 
+        alert(
+          "Ese correo ya está registrado"
+        )
 
-    createUser({
+      }
 
+      else if(
+        error.code ===
+        "auth/weak-password"
+      ){
 
-      id:Date.now(),
+        alert(
+          "La contraseña debe tener al menos 6 caracteres"
+        )
 
+      }
 
-      name,
+      else{
 
+        alert(
+          "Error creando cuenta"
+        )
 
-      email,
-
-
-      password,
-
-
-      role,
-
-
-      vehicle,
-
-
-      vehicleMultiplier,
-
-
-      available:false
-
-
-
-    })
-
+      }
 
 
 
-
-
-
-
-    alert(
-
-      "Cuenta creada correctamente"
-
-    )
-
-
-
-
-
-    navigate("/login")
+    }
 
 
 
   }
-
-
 
 
 
@@ -206,15 +243,10 @@ function Register() {
 
 <>
 
-
 <Navbar />
 
 
-
 <main className="register-page">
-
-
-
 
 
 <h1>
@@ -224,18 +256,11 @@ Crear cuenta
 </h1>
 
 
-
-
-
 <p>
 
 Únete a Volando
 
 </p>
-
-
-
-
 
 
 
@@ -259,10 +284,6 @@ e=>setName(e.target.value)
 
 
 
-
-
-
-
 <input
 
 placeholder="Correo electrónico"
@@ -278,10 +299,6 @@ e=>setEmail(e.target.value)
 }
 
 />
-
-
-
-
 
 
 
@@ -308,9 +325,6 @@ e=>setPassword(e.target.value)
 
 
 
-
-
-
 <h3>
 
 ¿Cómo quieres usar Volando?
@@ -321,20 +335,11 @@ e=>setPassword(e.target.value)
 
 
 
-
-
-
-
 <div className="role-selector">
 
 
 
-
-
-
-
 <div
-
 
 className={
 
@@ -350,15 +355,9 @@ role==="cliente"
 
 }
 
-
-
 onClick={()=>setRole("cliente")}
 
-
-
 >
-
-
 
 
 <div className="role-icon">
@@ -368,9 +367,6 @@ onClick={()=>setRole("cliente")}
 </div>
 
 
-
-
-
 <h3>
 
 Cliente
@@ -378,17 +374,11 @@ Cliente
 </h3>
 
 
-
-
-
 <p>
 
 Necesito enviar paquetes
 
 </p>
-
-
-
 
 
 </div>
@@ -399,13 +389,7 @@ Necesito enviar paquetes
 
 
 
-
-
-
-
-
 <div
-
 
 className={
 
@@ -421,15 +405,9 @@ role==="mensajero"
 
 }
 
-
-
 onClick={()=>setRole("mensajero")}
 
-
-
 >
-
-
 
 
 <div className="role-icon">
@@ -439,17 +417,11 @@ onClick={()=>setRole("mensajero")}
 </div>
 
 
-
-
-
 <h3>
 
 Mensajero
 
 </h3>
-
-
-
 
 
 <p>
@@ -459,21 +431,11 @@ Quiero realizar entregas
 </p>
 
 
-
-
-
 </div>
 
 
 
-
-
-
-
-
 </div>
-
-
 
 
 
@@ -486,9 +448,7 @@ Quiero realizar entregas
 role==="mensajero" && (
 
 
-
 <>
-
 
 
 <h3>
@@ -501,20 +461,11 @@ role==="mensajero" && (
 
 
 
-
-
-
-
 <div className="vehicle-selector">
 
 
 
-
-
-
-
 <div
-
 
 className={
 
@@ -530,36 +481,20 @@ vehicle==="A pie"
 
 }
 
-
-
 onClick={()=>selectVehicle(
-
 "A pie",
-
 1
-
 )}
-
-
 
 >
 
-
-
-<div className="role-icon">
-
 🚶
-
-</div>
-
-
 
 <h3>
 
 A pie
 
 </h3>
-
 
 
 <p>
@@ -569,19 +504,13 @@ Sin vehículo
 </p>
 
 
-
 </div>
 
 
 
 
 
-
-
-
-
 <div
-
 
 className={
 
@@ -597,36 +526,20 @@ vehicle==="Bicicleta"
 
 }
 
-
-
 onClick={()=>selectVehicle(
-
 "Bicicleta",
-
 1.15
-
 )}
-
-
 
 >
 
-
-
-<div className="role-icon">
-
 🚲
-
-</div>
-
-
 
 <h3>
 
 Bicicleta
 
 </h3>
-
 
 
 <p>
@@ -636,7 +549,6 @@ Entrega rápida urbana
 </p>
 
 
-
 </div>
 
 
@@ -645,10 +557,7 @@ Entrega rápida urbana
 
 
 
-
-
 <div
-
 
 className={
 
@@ -664,36 +573,20 @@ vehicle==="Moto"
 
 }
 
-
-
 onClick={()=>selectVehicle(
-
 "Moto",
-
 1.40
-
 )}
-
-
 
 >
 
-
-
-<div className="role-icon">
-
 🛵
-
-</div>
-
-
 
 <h3>
 
 Moto
 
 </h3>
-
 
 
 <p>
@@ -703,7 +596,6 @@ Mayor velocidad
 </p>
 
 
-
 </div>
 
 
@@ -712,10 +604,7 @@ Mayor velocidad
 
 
 
-
-
 <div
-
 
 className={
 
@@ -731,36 +620,20 @@ vehicle==="Auto"
 
 }
 
-
-
 onClick={()=>selectVehicle(
-
 "Auto",
-
 1.80
-
 )}
-
-
 
 >
 
-
-
-<div className="role-icon">
-
 🚗
-
-</div>
-
-
 
 <h3>
 
 Auto
 
 </h3>
-
 
 
 <p>
@@ -770,14 +643,7 @@ Paquetes grandes
 </p>
 
 
-
 </div>
-
-
-
-
-
-
 
 
 
@@ -787,15 +653,9 @@ Paquetes grandes
 
 </>
 
-
 )
 
 }
-
-
-
-
-
 
 
 
@@ -818,11 +678,7 @@ Crear cuenta
 
 
 
-
-
-
 </main>
-
 
 
 </>
@@ -831,7 +687,6 @@ Crear cuenta
   )
 
 }
-
 
 
 export default Register

@@ -1,4 +1,21 @@
-import { getUsers } from "./users"
+import {
+  signInWithEmailAndPassword,
+  signOut
+} from "firebase/auth"
+
+
+import {
+  auth
+} from "../firebase/auth"
+
+
+import {
+  getFirebaseUserByUid
+} from "./firebaseUsers"
+
+
+
+
 
 
 
@@ -6,6 +23,9 @@ export type CurrentUser = {
 
 
   id:number
+
+
+  uid:string
 
 
   name:string
@@ -38,7 +58,163 @@ export type CurrentUser = {
 
 
 
-const SESSION_KEY = "currentUser"
+const SESSION_KEY="currentUser"
+
+
+
+
+
+
+
+
+
+// LOGIN FIREBASE
+
+
+export async function login(
+
+
+email:string,
+
+
+password:string
+
+
+):Promise<CurrentUser|null>{
+
+
+
+
+
+try{
+
+
+
+const result = await signInWithEmailAndPassword(
+
+auth,
+
+email,
+
+password
+
+)
+
+
+
+
+
+const uid=result.user.uid
+
+
+
+
+
+
+const profile = await getFirebaseUserByUid(
+
+uid
+
+)
+
+
+
+
+
+
+if(!profile){
+
+
+return null
+
+
+}
+
+
+
+
+
+
+
+
+const session:CurrentUser={
+
+
+
+id:profile.id,
+
+
+uid:profile.uid,
+
+
+name:profile.name,
+
+
+email:profile.email,
+
+
+role:profile.role,
+
+
+vehicle:profile.vehicle || "",
+
+
+vehicleMultiplier:
+profile.vehicleMultiplier || 1,
+
+
+available:
+profile.available ?? false
+
+
+
+}
+
+
+
+
+
+
+
+saveSession(session)
+
+
+
+
+
+
+
+return session
+
+
+
+
+
+}
+
+catch(error){
+
+
+
+console.error(
+
+"Error login:",
+
+error
+
+)
+
+
+
+return null
+
+
+
+}
+
+
+
+}
 
 
 
@@ -50,128 +226,102 @@ const SESSION_KEY = "currentUser"
 
 
 
-export function login(
+// GUARDAR SESION
 
 
-  email:string,
+export function saveSession(
 
-
-  password:string
-
+user:CurrentUser
 
 ){
 
 
 
-  const users = getUsers()
+localStorage.setItem(
 
+SESSION_KEY,
 
+JSON.stringify(user)
 
-  const user = users.find(
+)
 
 
+}
 
-    user =>
 
 
 
-      user.email === email &&
 
 
 
-      user.password === password
 
 
 
-  )
 
+// CERRAR SESION
 
 
+export async function logout(){
 
 
 
+await signOut(auth)
 
 
 
-  if(user){
+localStorage.removeItem(
 
+SESSION_KEY
 
+)
 
-    const session:CurrentUser = {
 
+}
 
 
-      id:user.id,
 
 
 
-      name:user.name,
 
 
 
-      email:user.email,
 
 
 
-      role:user.role,
+// USUARIO ACTUAL
 
 
+export function getCurrentUser()
 
-      vehicle:user.vehicle || "",
+:CurrentUser|null{
 
 
 
-      vehicleMultiplier:
-        user.vehicleMultiplier || 1,
+const saved=
 
+localStorage.getItem(
 
+SESSION_KEY
 
-      available:
-        user.available ?? false
+)
 
 
 
-    }
 
 
+if(saved){
 
 
+return JSON.parse(saved)
 
 
+}
 
 
-    localStorage.setItem(
 
 
-      SESSION_KEY,
 
-
-      JSON.stringify(session)
-
-
-    )
-
-
-
-
-
-
-
-    return session
-
-
-
-  }
-
-
-
-
-
-
-
-
-
-  return null
+return null
 
 
 
@@ -187,98 +337,13 @@ export function login(
 
 
 
-
-
-
-export function logout(){
-
-
-
-  localStorage.removeItem(
-
-
-    SESSION_KEY
-
-
-  )
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-export function getCurrentUser():CurrentUser | null{
-
-
-
-  const saved = localStorage.getItem(
-
-
-    SESSION_KEY
-
-
-  )
-
-
-
-
-
-
-
-
-  if(saved){
-
-
-
-    return JSON.parse(saved)
-
-
-
-  }
-
-
-
-
-
-
-
-
-  return null
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
+// ESTA LOGUEADO
 
 
 export function isLogged(){
 
 
-
-  return getCurrentUser() !== null
-
+return getCurrentUser() !== null
 
 
 }
@@ -293,64 +358,52 @@ export function isLogged(){
 
 
 
+// ACTUALIZAR DISPONIBILIDAD LOCAL
 
-
-
-
-// Actualizar disponibilidad del mensajero
 
 export function updateSessionAvailability(
 
-
-  status:boolean
-
+status:boolean
 
 ){
 
 
 
-  const saved = localStorage.getItem(
+const saved=
 
+localStorage.getItem(
 
-    SESSION_KEY
+SESSION_KEY
 
-
-  )
-
-
-
-
-
-  if(saved){
-
-
-
-    const user:CurrentUser = JSON.parse(saved)
+)
 
 
 
 
 
-    user.available = status
+if(saved){
+
+
+
+const user:CurrentUser=
+
+JSON.parse(saved)
 
 
 
 
 
-    localStorage.setItem(
-
-
-      SESSION_KEY,
-
-
-      JSON.stringify(user)
-
-
-    )
+user.available=status
 
 
 
-  }
+
+
+saveSession(user)
+
+
+
+}
 
 
 
@@ -366,18 +419,14 @@ export function updateSessionAvailability(
 
 
 
-// Verificar si es administrador
+// ROLES
+
 
 export function isAdmin(){
 
 
 
-  const user = getCurrentUser()
-
-
-
-  return user?.role === "admin"
-
+return getCurrentUser()?.role==="admin"
 
 
 }
@@ -386,24 +435,12 @@ export function isAdmin(){
 
 
 
-
-
-
-
-
-
-// Verificar si es mensajero
 
 export function isMessenger(){
 
 
 
-  const user = getCurrentUser()
-
-
-
-  return user?.role === "mensajero"
-
+return getCurrentUser()?.role==="mensajero"
 
 
 }
@@ -414,22 +451,11 @@ export function isMessenger(){
 
 
 
-
-
-
-
-// Verificar si es cliente
-
 export function isClient(){
 
 
 
-  const user = getCurrentUser()
-
-
-
-  return user?.role === "cliente"
-
+return getCurrentUser()?.role==="cliente"
 
 
 }

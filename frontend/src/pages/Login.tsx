@@ -1,292 +1,316 @@
 import Navbar from '../components/Navbar'
-import {useState} from 'react'
-import {login} from '../data/auth'
-import {useNavigate} from 'react-router-dom'
+
+import {
+  useState
+} from 'react'
+
+import {
+  useNavigate
+} from 'react-router-dom'
+
+
+import {
+  login
+} from "../data/auth"
+
+
 
 
 
 function Login(){
 
 
-  const navigate = useNavigate()
 
+const navigate = useNavigate()
 
 
-  const [email,setEmail] = useState("")
 
-  const [password,setPassword] = useState("")
 
-  const [error,setError] = useState("")
 
+const [email,setEmail]=useState("")
 
 
+const [password,setPassword]=useState("")
 
 
+const [error,setError]=useState("")
 
 
 
-  function handleLogin(){
 
 
 
-    const user = login(
 
-      email,
 
-      password
 
-    )
+async function handleLogin(){
 
 
 
+setError("")
 
 
 
 
-    if(!user){
 
+const user = await login(
 
+email,
 
-      setError(
+password
 
-        "Correo o contraseña incorrectos"
+)
 
-      )
 
 
-      return
 
 
-    }
 
+if(!user){
 
 
+setError(
 
+"Correo o contraseña incorrectos"
 
+)
 
 
-    // ADMIN
+return
 
-    if(user.role === "admin"){
 
+}
 
-      navigate("/admin")
 
 
-      return
 
 
-    }
 
 
 
 
+if(user.role==="admin"){
 
 
 
+navigate("/admin")
 
-    // CLIENTE
 
-    if(user.role === "cliente"){
+return
 
 
-      navigate("/client")
+}
 
 
-      return
 
 
-    }
 
 
 
 
+if(user.role==="cliente"){
 
 
 
+navigate("/client")
 
 
-    // MENSAJERO
+return
 
-    if(user.role === "mensajero"){
 
+}
 
-      navigate("/messenger")
 
 
-      return
 
 
-    }
 
 
 
-  }
+if(user.role==="mensajero"){
 
 
 
+navigate("/messenger")
 
 
+return
 
 
+}
 
 
-  return(
 
+}
 
-    <>
 
 
-      <Navbar />
 
 
 
 
 
-      <main className="register-page">
 
+return(
 
 
+<>
 
 
-        <h1>
+<Navbar />
 
-          Iniciar sesión
 
-        </h1>
 
 
 
+<main className="register-page">
 
 
-        <p>
 
-          Accede a tu cuenta de Volando.
 
-        </p>
 
+<h1>
 
+Iniciar sesión
 
+</h1>
 
 
 
 
-        <input
 
 
-          placeholder="Correo"
+<p>
 
+Accede a tu cuenta de Volando.
 
-          type="email"
+</p>
 
 
-          value={email}
 
 
-          onChange={
 
-            e=>setEmail(e.target.value)
 
-          }
 
 
-        />
 
+<input
 
 
+placeholder="Correo"
 
 
+type="email"
 
 
+value={email}
 
 
-        <input
+onChange={
 
+e=>setEmail(e.target.value)
 
-          placeholder="Contraseña"
+}
 
 
-          type="password"
+/>
 
 
-          value={password}
 
 
-          onChange={
 
-            e=>setPassword(e.target.value)
 
-          }
 
 
-        />
 
+<input
 
 
+placeholder="Contraseña"
 
 
+type="password"
 
 
+value={password}
 
 
-        {
+onChange={
 
+e=>setPassword(e.target.value)
 
-          error &&
+}
 
 
+/>
 
-          <p style={{color:"red"}}>
 
 
-            {error}
 
 
-          </p>
 
 
-        }
 
 
 
+{
 
+error &&
 
 
+<p style={{color:"red"}}>
 
 
+{error}
 
-        <button
 
+</p>
 
-          className="primary"
 
+}
 
-          onClick={handleLogin}
 
 
-        >
 
 
-          Entrar
 
 
 
-        </button>
 
+<button
 
 
+className="primary"
 
 
+onClick={handleLogin}
 
 
-      </main>
+>
 
 
+Entrar
 
-    </>
 
+</button>
 
-  )
+
+
+
+
+
+
+
+</main>
+
+
+
+
+</>
+
+
+)
+
 
 
 }

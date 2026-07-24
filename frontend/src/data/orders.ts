@@ -4,12 +4,14 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
   updateDoc,
   doc,
   deleteDoc
 } from "firebase/firestore"
 
 import { db } from "../firebase/firestore"
+
 
 
 
@@ -20,6 +22,7 @@ export type OrderStatus =
   | "Recogiendo pedido"
   | "En camino"
   | "Entregado"
+  | "Cancelado"
 
 
 
@@ -32,6 +35,8 @@ export type Location = {
   lng:number
 
 }
+
+
 
 
 
@@ -101,6 +106,7 @@ export type Order = {
 
 
 
+
 const ORDERS_COLLECTION="orders"
 
 
@@ -121,7 +127,6 @@ order:Order
 ){
 
 
-
 const result = await addDoc(
 
 collection(
@@ -135,7 +140,6 @@ ORDERS_COLLECTION
 order
 
 )
-
 
 
 return result.id
@@ -156,11 +160,13 @@ return result.id
 // OBTENER PEDIDOS
 
 
-export async function getOrders():Promise<Order[]>{
+export async function getOrders()
+
+:Promise<Order[]>{
 
 
 
-const snapshot = await getDocs(
+const q=query(
 
 collection(
 
@@ -168,9 +174,21 @@ db,
 
 ORDERS_COLLECTION
 
+),
+
+orderBy(
+
+"id",
+
+"desc"
+
 )
 
 )
+
+
+
+const snapshot=await getDocs(q)
 
 
 
@@ -179,16 +197,13 @@ ORDERS_COLLECTION
 return snapshot.docs.map(item=>({
 
 
-
 firebaseId:item.id,
 
 
 ...item.data()
 
 
-
 } as Order))
-
 
 
 }
@@ -210,13 +225,21 @@ export async function getOrderById(
 
 id:number
 
-):Promise<Order|undefined>{
+)
+
+:Promise<Order|undefined>{
 
 
 
 const q=query(
 
-collection(db,ORDERS_COLLECTION),
+collection(
+
+db,
+
+ORDERS_COLLECTION
+
+),
 
 where(
 
@@ -232,6 +255,8 @@ id
 
 
 
+
+
 const snapshot=await getDocs(q)
 
 
@@ -241,6 +266,7 @@ if(snapshot.empty){
 return undefined
 
 }
+
 
 
 
@@ -255,7 +281,6 @@ firebaseId:item.id,
 
 
 ...item.data()
-
 
 
 } as Order
@@ -279,18 +304,13 @@ firebaseId:item.id,
 
 export async function acceptOrder(
 
-
 id:number,
-
 
 messengerId:number,
 
-
 messengerName:string,
 
-
 vehicle:string
-
 
 ){
 
@@ -298,7 +318,13 @@ vehicle:string
 
 const q=query(
 
-collection(db,ORDERS_COLLECTION),
+collection(
+
+db,
+
+ORDERS_COLLECTION
+
+),
 
 where(
 
@@ -314,6 +340,8 @@ id
 
 
 
+
+
 const snapshot=await getDocs(q)
 
 
@@ -323,7 +351,6 @@ if(snapshot.empty){
 return
 
 }
-
 
 
 
@@ -351,28 +378,22 @@ ref,
 
 status:"Mensajero asignado",
 
-
 messengerId,
-
 
 messenger:messengerName,
 
-
 messengerVehicle:vehicle,
-
 
 messengerRating:5
 
 
 }
 
-
 )
 
 
 
 }
-
 
 
 
@@ -389,12 +410,9 @@ messengerRating:5
 
 export async function updateOrderStatus(
 
-
 id:number,
 
-
 status:OrderStatus
-
 
 ){
 
@@ -402,7 +420,13 @@ status:OrderStatus
 
 const q=query(
 
-collection(db,ORDERS_COLLECTION),
+collection(
+
+db,
+
+ORDERS_COLLECTION
+
+),
 
 where(
 
@@ -418,6 +442,8 @@ id
 
 
 
+
+
 const snapshot=await getDocs(q)
 
 
@@ -427,7 +453,6 @@ if(snapshot.empty){
 return
 
 }
-
 
 
 
@@ -468,17 +493,45 @@ status
 
 
 
+// CANCELAR PEDIDO
+
+
+export async function cancelOrder(
+
+id:number
+
+){
+
+
+await updateOrderStatus(
+
+id,
+
+"Cancelado"
+
+)
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 // GPS MENSAJERO
 
 
 export async function updateMessengerLocation(
 
-
 id:number,
 
-
 location:Location
-
 
 ){
 
@@ -486,7 +539,13 @@ location:Location
 
 const q=query(
 
-collection(db,ORDERS_COLLECTION),
+collection(
+
+db,
+
+ORDERS_COLLECTION
+
+),
 
 where(
 
@@ -499,6 +558,8 @@ id
 )
 
 )
+
+
 
 
 
@@ -576,7 +637,6 @@ firebaseId
 )
 
 )
-
 
 
 }

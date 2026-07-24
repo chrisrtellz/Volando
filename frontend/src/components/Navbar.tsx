@@ -1,121 +1,96 @@
-import { useNavigate } from 'react-router-dom'
-import { getCurrentUser, logout } from '../data/auth'
-import { useState } from 'react'
-
+import { useNavigate } from "react-router-dom"
+import { getCurrentUser, logout } from "../data/auth"
+import { useState } from "react"
 
 function Navbar() {
 
-
   const navigate = useNavigate()
 
+  const [user, setUser] = useState(getCurrentUser())
 
-  const [user, setUser] = useState(
-    getCurrentUser()
-  )
-
-
-
-
-
-  function handleLogout(){
-
+  function handleLogout() {
 
     logout()
 
-
     setUser(null)
-
 
     navigate("/login")
 
-
   }
 
+  function goPanel() {
 
+    if (user?.role === "cliente") {
 
-
-
-
-
-  function goPanel(){
-
-
-    if(user?.role === "cliente"){
-
-
-      navigate("/client")
-
+      navigate("/client-panel")
 
     }
 
+    if (user?.role === "mensajero") {
 
-    if(user?.role === "mensajero"){
-
-
-      navigate("/messenger")
-
+      navigate("/messenger-panel")
 
     }
 
+    if (user?.role === "admin") {
+
+      navigate("/admin-panel")
+
+    }
 
   }
-
-
-
-
-
-
 
   return (
 
-
     <header className="navbar">
 
-
-
-
+      {/* LOGO */}
 
       <div
 
         className="logo"
 
-        onClick={() => navigate('/')}
-
-        style={{
-          cursor:"pointer"
-        }}
+        onClick={() => navigate("/")}
 
       >
 
-        Volando
+        <div className="logo-icon">
+
+          🪽
+
+        </div>
+
+        <div className="logo-text">
+
+          <h2>VOLANDO</h2>
+
+          <span>Plataforma de mensajería</span>
+
+        </div>
+
+        <div className="logo-home">
+
+          🏠 Volver al inicio
+
+        </div>
 
       </div>
 
-
-
-
-
-
-
+      {/* BOTONES */}
 
       <div className="nav-buttons">
 
-
-
-
-
         {
+
           !user && (
 
-
             <>
-
 
               <button
 
                 className="login"
 
-                onClick={() => navigate('/login')}
+                onClick={() => navigate("/login")}
 
               >
 
@@ -123,15 +98,11 @@ function Navbar() {
 
               </button>
 
-
-
-
-
               <button
 
                 className="register"
 
-                onClick={() => navigate('/register')}
+                onClick={() => navigate("/register")}
 
               >
 
@@ -139,39 +110,23 @@ function Navbar() {
 
               </button>
 
-
-
             </>
-
 
           )
 
         }
 
-
-
-
-
-
-
-
         {
+
           user && (
 
-
             <>
-
 
               <span className="user-name">
 
                 👤 {user.name}
 
               </span>
-
-
-
-
-
 
               <button
 
@@ -185,12 +140,6 @@ function Navbar() {
 
               </button>
 
-
-
-
-
-
-
               <button
 
                 className="login"
@@ -203,31 +152,18 @@ function Navbar() {
 
               </button>
 
-
-
             </>
-
 
           )
 
         }
 
-
-
-
-
       </div>
 
-
-
-
-
     </header>
-
 
   )
 
 }
-
 
 export default Navbar

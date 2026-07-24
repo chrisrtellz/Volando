@@ -6,10 +6,15 @@ import {
 } from "react"
 
 import {
-  getUsers,
-  deleteUser,
-  toggleUserActive
-} from "../data/users"
+  getFirebaseUsers,
+  deleteFirebaseUser,
+  toggleFirebaseUserActive
+} from "../data/firebaseUsers"
+
+import type {
+  FirebaseUser
+} from "../data/firebaseUsers"
+
 
 import {
   getOrders
@@ -19,9 +24,12 @@ import type {
   Order
 } from "../data/orders"
 
+
 import {
   getCurrentUser
 } from "../data/auth"
+
+
 
 
 
@@ -35,11 +43,9 @@ const admin = getCurrentUser()
 
 
 
-const [users,setUsers] = useState(
 
-getUsers()
 
-)
+const [users,setUsers] = useState<FirebaseUser[]>([])
 
 
 
@@ -53,13 +59,55 @@ const [orders,setOrders] = useState<Order[]>([])
 
 
 
+async function loadUsers(){
+
+
+
+ const data = await getFirebaseUsers()
+
+
+ setUsers(data)
+
+
+
+}
+
+
+
+
+
+
+
+
+
 async function loadOrders(){
 
 
-const data = await getOrders()
+ const data = await getOrders()
 
 
-setOrders(data)
+ setOrders(data)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+async function refresh(){
+
+
+ await loadUsers()
+
+
+ await loadOrders()
+
 
 
 }
@@ -76,7 +124,8 @@ useEffect(()=>{
 
 
 
-loadOrders()
+refresh()
+
 
 
 
@@ -85,11 +134,12 @@ loadOrders()
 const timer = setInterval(()=>{
 
 
-loadOrders()
+ refresh()
 
 
+},3000)
 
-},2000)
+
 
 
 
@@ -109,27 +159,11 @@ return ()=>clearInterval(timer)
 
 
 
-function refreshUsers(){
-
-
-setUsers(
-
-getUsers()
-
-)
-
-
-}
 
 
 
 
-
-
-
-
-
-function removeUser(id:number){
+async function removeUser(id:number){
 
 
 
@@ -141,6 +175,8 @@ const confirmDelete = window.confirm(
 
 
 
+
+
 if(!confirmDelete){
 
 return
@@ -149,11 +185,41 @@ return
 
 
 
-deleteUser(id)
 
 
 
-refreshUsers()
+await deleteFirebaseUser(id)
+
+
+
+
+
+refresh()
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+async function blockUser(id:number){
+
+
+
+await toggleFirebaseUserActive(id)
+
+
+
+refresh()
 
 
 
@@ -161,25 +227,6 @@ refreshUsers()
 
 
 
-
-
-
-
-
-
-function blockUser(id:number){
-
-
-
-toggleUserActive(id)
-
-
-
-refreshUsers()
-
-
-
-}
 
 
 
@@ -193,7 +240,6 @@ return(
 
 
 <>
-
 
 
 <Navbar />
@@ -210,11 +256,13 @@ return(
 
 
 
+
 <h1>
 
 Panel Administrador
 
 </h1>
+
 
 
 
@@ -235,7 +283,6 @@ Bienvenido {admin?.name}
 
 
 <section className="admin-stats">
-
 
 
 
@@ -371,7 +418,6 @@ Pedidos
 
 
 
-
 </section>
 
 
@@ -398,7 +444,23 @@ Pedidos
 
 {
 
+users.length===0 ? (
+
+
+<p>
+
+No hay usuarios registrados.
+
+</p>
+
+
+)
+
+:
+
 users.map(user=>(
+
+
 
 
 
@@ -406,9 +468,11 @@ users.map(user=>(
 
 className="card user-card"
 
-key={user.id}
+key={user.firebaseId || user.id}
 
 >
+
+
 
 
 
@@ -424,11 +488,17 @@ key={user.id}
 
 
 
+
+
+
 <p>
 
 📧 {user.email}
 
 </p>
+
+
+
 
 
 
@@ -443,6 +513,9 @@ Rol:
 {user.role}
 
 </p>
+
+
+
 
 
 
@@ -470,9 +543,14 @@ user.role==="mensajero" && (
 
 
 
+
+
+
 <p>
 
 Estado:
+
+{" "}
 
 {
 
@@ -489,6 +567,8 @@ user.active !== false
 }
 
 </p>
+
+
 
 
 
@@ -529,6 +609,8 @@ user.active !== false
 
 
 
+
+
 <button
 
 className="danger"
@@ -548,14 +630,16 @@ Eliminar
 
 
 
+
 </div>
+
+
 
 
 
 ))
 
 }
-
 
 
 
@@ -587,13 +671,11 @@ Eliminar
 orders.length===0 ? (
 
 
-
 <p>
 
 No hay pedidos.
 
 </p>
-
 
 
 )
@@ -613,7 +695,6 @@ className="card order-card"
 key={order.id}
 
 >
-
 
 
 
@@ -713,8 +794,6 @@ order.messenger && (
 
 <>
 
-
-
 <p>
 
 🛵 Mensajero:
@@ -724,6 +803,7 @@ order.messenger && (
 {order.messenger}
 
 </p>
+
 
 
 
@@ -743,6 +823,7 @@ order.messenger && (
 
 
 
+
 <p>
 
 ⭐ Valoración:
@@ -754,11 +835,7 @@ order.messenger && (
 </p>
 
 
-
-
-
 </>
-
 
 
 )
@@ -777,12 +854,7 @@ order.messenger && (
 
 ))
 
-
 }
-
-
-
-
 
 
 
