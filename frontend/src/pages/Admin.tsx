@@ -5,29 +5,36 @@ import {
   useEffect
 } from "react"
 
+
 import {
-  getFirebaseUsers,
-  deleteFirebaseUser,
-  toggleFirebaseUserActive
-} from "../data/firebaseUsers"
+  getSupabaseUsers,
+  deleteSupabaseUser,
+  toggleSupabaseUserActive
+} from "../data/supabaseUsers"
+
 
 import type {
-  FirebaseUser
-} from "../data/firebaseUsers"
+  SupabaseUser
+} from "../data/supabaseUsers"
+
 
 
 import {
   getOrders
 } from "../data/orders"
 
+
 import type {
   Order
 } from "../data/orders"
 
 
+
 import {
   getCurrentUser
 } from "../data/auth"
+
+
 
 
 
@@ -45,7 +52,7 @@ const admin = getCurrentUser()
 
 
 
-const [users,setUsers] = useState<FirebaseUser[]>([])
+const [users,setUsers] = useState<SupabaseUser[]>([])
 
 
 
@@ -63,7 +70,7 @@ async function loadUsers(){
 
 
 
- const data = await getFirebaseUsers()
+ const data = await getSupabaseUsers()
 
 
  setUsers(data)
@@ -163,6 +170,7 @@ return ()=>clearInterval(timer)
 
 
 
+
 async function removeUser(id:number){
 
 
@@ -172,6 +180,8 @@ const confirmDelete = window.confirm(
 "¿Eliminar usuario?"
 
 )
+
+
 
 
 
@@ -188,7 +198,8 @@ return
 
 
 
-await deleteFirebaseUser(id)
+
+await deleteSupabaseUser(id)
 
 
 
@@ -199,6 +210,9 @@ refresh()
 
 
 }
+
+
+
 
 
 
@@ -215,7 +229,7 @@ async function blockUser(id:number){
 
 
 
-await toggleFirebaseUserActive(id)
+await toggleSupabaseUserActive(id)
 
 
 
@@ -224,6 +238,10 @@ refresh()
 
 
 }
+
+
+
+
 
 
 
@@ -256,7 +274,6 @@ return(
 
 
 
-
 <h1>
 
 Panel Administrador
@@ -268,11 +285,16 @@ Panel Administrador
 
 
 
+
 <p>
 
 Bienvenido {admin?.name}
 
 </p>
+
+
+
+
 
 
 
@@ -330,6 +352,7 @@ Mensajeros
 <p>
 
 
+
 {
 
 users.filter(
@@ -337,6 +360,7 @@ users.filter(
 u=>u.role==="mensajero"
 
 ).length
+
 
 
 }
@@ -369,6 +393,7 @@ Clientes
 <p>
 
 
+
 {
 
 users.filter(
@@ -376,6 +401,7 @@ users.filter(
 u=>u.role==="cliente"
 
 ).length
+
 
 
 }
@@ -468,9 +494,10 @@ users.map(user=>(
 
 className="card user-card"
 
-key={user.firebaseId || user.id}
+key={user.id}
 
 >
+
 
 
 
@@ -491,11 +518,13 @@ key={user.firebaseId || user.id}
 
 
 
+
 <p>
 
 📧 {user.email}
 
 </p>
+
 
 
 
@@ -610,7 +639,6 @@ user.active !== false
 
 
 
-
 <button
 
 className="danger"
@@ -640,6 +668,7 @@ Eliminar
 ))
 
 }
+
 
 
 
@@ -701,11 +730,13 @@ key={order.id}
 
 
 
+
 <h3>
 
 Pedido #{order.id}
 
 </h3>
+
 
 
 
@@ -723,6 +754,7 @@ Pedido #{order.id}
 {order.clientName || "Sin datos"}
 
 </p>
+
 
 
 
@@ -750,6 +782,7 @@ km
 
 
 
+
 <p>
 
 💰 Precio:
@@ -761,6 +794,7 @@ km
 CUP
 
 </p>
+
 
 
 
@@ -787,12 +821,16 @@ Estado:
 
 
 
+
+
+
 {
 
 order.messenger && (
 
 
 <>
+
 
 <p>
 
@@ -809,6 +847,7 @@ order.messenger && (
 
 
 
+
 <p>
 
 🚗 Vehículo:
@@ -818,6 +857,7 @@ order.messenger && (
 {order.messengerVehicle}
 
 </p>
+
 
 
 
@@ -848,6 +888,7 @@ order.messenger && (
 
 
 
+
 </div>
 
 
@@ -859,7 +900,11 @@ order.messenger && (
 
 
 
+
+
 </main>
+
+
 
 
 

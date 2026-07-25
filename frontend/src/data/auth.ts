@@ -1,17 +1,11 @@
 import {
-  signInWithEmailAndPassword,
-  signOut
-} from "firebase/auth"
+  supabase
+} from "../supabase/client"
 
 
 import {
-  auth
-} from "../firebase/auth"
-
-
-import {
-  getFirebaseUserByUid
-} from "./firebaseUsers"
+  getSupabaseUserByUid
+} from "./supabaseUsers"
 
 
 
@@ -68,7 +62,7 @@ const SESSION_KEY="currentUser"
 
 
 
-// LOGIN FIREBASE
+// LOGIN SUPABASE
 
 
 export async function login(
@@ -86,34 +80,76 @@ password:string
 
 
 
+
 try{
 
 
 
-const result = await signInWithEmailAndPassword(
 
-auth,
+
+const {
+
+data,
+
+error
+
+} = await supabase.auth.signInWithPassword({
+
 
 email,
 
+
 password
+
+
+})
+
+
+
+
+
+
+
+if(error || !data.user){
+
+
+
+console.error(
+
+"Error login:",
+
+error
 
 )
 
 
 
-
-
-const uid=result.user.uid
-
+return null
 
 
 
+}
 
 
-const profile = await getFirebaseUserByUid(
+
+
+
+
+
+
+const uid = data.user.id
+
+
+
+
+
+
+
+const profile = await getSupabaseUserByUid(
+
 
 uid
+
 
 )
 
@@ -129,6 +165,7 @@ return null
 
 
 }
+
 
 
 
@@ -160,15 +197,18 @@ vehicle:profile.vehicle || "",
 
 
 vehicleMultiplier:
+
 profile.vehicleMultiplier || 1,
 
 
 available:
+
 profile.available ?? false
 
 
 
 }
+
 
 
 
@@ -184,7 +224,10 @@ saveSession(session)
 
 
 
+
 return session
+
+
 
 
 
@@ -196,13 +239,20 @@ catch(error){
 
 
 
+
+
 console.error(
+
 
 "Error login:",
 
+
 error
 
+
 )
+
+
 
 
 
@@ -211,6 +261,10 @@ return null
 
 
 }
+
+
+
+
 
 
 
@@ -231,7 +285,9 @@ return null
 
 export function saveSession(
 
+
 user:CurrentUser
+
 
 ){
 
@@ -239,11 +295,15 @@ user:CurrentUser
 
 localStorage.setItem(
 
+
 SESSION_KEY,
+
 
 JSON.stringify(user)
 
+
 )
+
 
 
 }
@@ -265,18 +325,22 @@ export async function logout(){
 
 
 
-await signOut(auth)
+await supabase.auth.signOut()
 
 
 
 localStorage.removeItem(
 
+
 SESSION_KEY
+
 
 )
 
 
+
 }
+
 
 
 
@@ -297,13 +361,20 @@ export function getCurrentUser()
 
 
 
-const saved=
+
+
+
+const saved =
+
 
 localStorage.getItem(
 
+
 SESSION_KEY
 
+
 )
+
 
 
 
@@ -312,10 +383,13 @@ SESSION_KEY
 if(saved){
 
 
+
 return JSON.parse(saved)
 
 
+
 }
+
 
 
 
@@ -337,16 +411,20 @@ return null
 
 
 
+
 // ESTA LOGUEADO
 
 
 export function isLogged(){
 
 
+
 return getCurrentUser() !== null
 
 
+
 }
+
 
 
 
@@ -363,19 +441,28 @@ return getCurrentUser() !== null
 
 export function updateSessionAvailability(
 
+
 status:boolean
+
 
 ){
 
 
 
-const saved=
+
+
+const saved =
+
 
 localStorage.getItem(
 
+
 SESSION_KEY
 
+
 )
+
+
 
 
 
@@ -385,9 +472,14 @@ if(saved){
 
 
 
-const user:CurrentUser=
+
+
+const user:CurrentUser =
+
 
 JSON.parse(saved)
+
+
 
 
 
@@ -399,15 +491,23 @@ user.available=status
 
 
 
+
+
 saveSession(user)
 
 
 
-}
 
 
 
 }
+
+
+
+
+
+}
+
 
 
 
@@ -429,7 +529,9 @@ export function isAdmin(){
 return getCurrentUser()?.role==="admin"
 
 
+
 }
+
 
 
 
@@ -441,6 +543,7 @@ export function isMessenger(){
 
 
 return getCurrentUser()?.role==="mensajero"
+
 
 
 }
@@ -456,6 +559,7 @@ export function isClient(){
 
 
 return getCurrentUser()?.role==="cliente"
+
 
 
 }

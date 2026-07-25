@@ -12,14 +12,17 @@ import type {
   Order
 } from '../data/orders'
 
+
 import {
   getCurrentUser,
   updateSessionAvailability
 } from '../data/auth'
 
+
 import {
-  updateAvailability
-} from '../data/users'
+  updateSupabaseAvailability
+} from '../data/supabaseUsers'
+
 
 import {
   useState,
@@ -34,6 +37,7 @@ function Messenger(){
 
 
 const user = getCurrentUser()
+
 
 
 
@@ -95,6 +99,7 @@ loadOrders()
 return()=>clearInterval(timer)
 
 
+
 },[])
 
 
@@ -117,6 +122,8 @@ return
 
 
 
+
+
 const newStatus=!available
 
 
@@ -125,25 +132,30 @@ setAvailable(newStatus)
 
 
 
-updateAvailability(
 
-user.id,
 
-newStatus
+updateSupabaseAvailability(
+
+  user.id,
+
+  newStatus
 
 )
 
 
 
+
+
 updateSessionAvailability(
 
-newStatus
+  newStatus
 
 )
 
 
 
 }
+
 
 
 
@@ -173,7 +185,9 @@ if(!available){
 
 
 alert(
+
 "Debes estar disponible para aceptar pedidos"
+
 )
 
 
@@ -181,6 +195,8 @@ return
 
 
 }
+
+
 
 
 
@@ -203,6 +219,8 @@ user.vehicle
 
 
 )
+
+
 
 
 
@@ -243,6 +261,8 @@ status
 
 
 )
+
+
 
 
 
@@ -296,7 +316,12 @@ return false
 
 
 
+
+
+
+
 return(
+
 
 <>
 
@@ -314,7 +339,11 @@ return(
 
 
 
+
+
 <div className="messenger-profile">
+
+
 
 
 
@@ -323,6 +352,7 @@ return(
 🛵
 
 </div>
+
 
 
 
@@ -339,6 +369,8 @@ Hola {user?.name}
 
 
 
+
+
 <p>
 
 Vehículo:
@@ -352,11 +384,13 @@ Vehículo:
 
 
 
+
 <p>
 
 ⭐ 5.0
 
 </p>
+
 
 
 
@@ -370,6 +404,8 @@ Vehículo:
 
 
 </div>
+
+
 
 
 
@@ -403,6 +439,7 @@ onClick={toggleAvailability}
 >
 
 
+
 {
 
 available
@@ -418,7 +455,10 @@ available
 }
 
 
+
 </button>
+
+
 
 
 
@@ -468,6 +508,7 @@ visibleOrders.map(order=>(
 
 
 
+
 <div
 
 className="card order-card"
@@ -475,6 +516,7 @@ className="card order-card"
 key={order.id}
 
 >
+
 
 
 
@@ -493,7 +535,10 @@ Pedido #{order.id}
 
 
 
+
 <div className="address-box">
+
+
 
 
 
@@ -516,6 +561,9 @@ order.pickupAddress ||
 
 
 
+
+
+
 <p>
 
 🏁 Entrega:
@@ -534,6 +582,8 @@ order.destinationAddress ||
 
 
 
+
+
 </div>
 
 
@@ -545,6 +595,7 @@ order.destinationAddress ||
 
 
 <RealMap
+
 
 
 points={[
@@ -576,6 +627,7 @@ order.messengerLocation
 onChange={()=>{}}
 
 
+
 />
 
 
@@ -602,6 +654,9 @@ km
 
 
 
+
+
+
 <p>
 
 💰 Ganancia:
@@ -618,6 +673,9 @@ CUP
 
 
 
+
+
+
 <p>
 
 Estado:
@@ -627,6 +685,8 @@ Estado:
 {order.status}
 
 </p>
+
+
 
 
 
@@ -658,6 +718,7 @@ order.messenger && (
 
 
 
+
 <p>
 
 🚗 Vehículo:
@@ -667,6 +728,7 @@ order.messenger && (
 {order.messengerVehicle}
 
 </p>
+
 
 
 
@@ -699,6 +761,8 @@ order.messenger && (
 
 
 
+
+
 {
 
 order.status==="Buscando mensajero"
@@ -706,6 +770,7 @@ order.status==="Buscando mensajero"
 &&
 
 (
+
 
 <button
 
@@ -719,9 +784,13 @@ Aceptar pedido
 
 </button>
 
+
 )
 
 }
+
+
+
 
 
 
@@ -745,6 +814,7 @@ order.messengerId===user?.id
 
 (
 
+
 <button
 
 className="primary"
@@ -763,9 +833,15 @@ Recoger pedido
 
 </button>
 
+
 )
 
 }
+
+
+
+
+
 
 
 
@@ -787,6 +863,7 @@ order.messengerId===user?.id
 
 (
 
+
 <button
 
 className="primary"
@@ -805,9 +882,14 @@ Iniciar entrega
 
 </button>
 
+
 )
 
 }
+
+
+
+
 
 
 
@@ -829,6 +911,7 @@ order.messengerId===user?.id
 
 (
 
+
 <button
 
 className="primary"
@@ -847,9 +930,13 @@ Finalizar entrega
 
 </button>
 
+
 )
 
 }
+
+
+
 
 
 
@@ -871,11 +958,13 @@ order.messengerId===user?.id
 
 (
 
+
 <p>
 
 ✅ Pedido completado
 
 </p>
+
 
 )
 
@@ -887,13 +976,19 @@ order.messengerId===user?.id
 
 
 
+
 </div>
+
 
 
 ))
 
 
+
 }
+
+
+
 
 
 

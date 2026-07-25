@@ -2,17 +2,20 @@ import Navbar from '../components/Navbar'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import {
-  createUserWithEmailAndPassword
-} from "firebase/auth"
 
 import {
-  auth
-} from "../firebase/auth"
+  supabase
+} from "../supabase/client"
+
 
 import {
-  createFirebaseUser
-} from "../data/firebaseUsers"
+  createSupabaseUser
+} from "../data/supabaseUsers"
+
+
+
+
+
 
 
 
@@ -30,6 +33,7 @@ function Register() {
   const [password,setPassword] = useState("")
 
 
+
   const [role,setRole] = useState<
     "cliente" | "mensajero"
   >("cliente")
@@ -39,6 +43,9 @@ function Register() {
   const [vehicle,setVehicle] = useState("")
 
   const [vehicleMultiplier,setVehicleMultiplier] = useState(1)
+
+
+
 
 
 
@@ -110,57 +117,141 @@ function Register() {
 
 
 
+
+
     try{
 
 
 
-      // Crear usuario en Firebase Authentication
 
-      const result =
-        await createUserWithEmailAndPassword(
 
-          auth,
+      // CREAR USUARIO EN SUPABASE AUTH
 
-          email,
 
-          password
+      const {
+
+        data,
+
+        error
+
+      } = await supabase.auth.signUp({
+
+        email,
+
+        password
+
+      })
+
+
+
+
+
+
+
+      if(error){
+
+        throw error
+
+      }
+
+
+
+
+
+
+
+
+      if(!data.user){
+
+
+        throw new Error(
+          "No se pudo crear el usuario en Auth"
+        )
+
+
+      }
+
+
+
+
+
+
+
+
+      const uid = data.user.id
+
+
+
+
+
+
+
+      // GUARDAR PERFIL EN TABLA USERS
+
+
+      const profile = await createSupabaseUser({
+
+
+
+        id:Date.now(),
+
+
+
+        uid,
+
+
+
+        name,
+
+
+
+        email,
+
+
+
+        role,
+
+
+
+        vehicle,
+
+
+
+        vehicleMultiplier,
+
+
+
+        available:false,
+
+
+
+        active:true
+
+
+
+      })
+
+
+
+
+
+
+
+
+      if(!profile){
+
+
+        throw new Error(
+
+          "No se pudo guardar el perfil en users"
 
         )
 
 
+      }
 
 
 
-      const uid = result.user.uid
-
-
-
-
-
-
-      // Guardar perfil en Firestore
-
-      await createFirebaseUser({
-
-        id:Date.now(),
-
-        uid,
-
-        name,
-
-        email,
-
-        role,
-
-        vehicle,
-
-        vehicleMultiplier,
-
-        available:false,
-
-        active:true
-
-      })
 
 
 
@@ -184,43 +275,90 @@ function Register() {
 
 
 
+
+
+
     }
+
 
     catch(error:any){
 
 
 
-      console.error(error)
+      console.error(
+
+        "ERROR REGISTRO:",
+
+        error
+
+      )
+
+
+
+
 
 
 
       if(
-        error.code ===
-        "auth/email-already-in-use"
-      ){
 
-        alert(
-          "Ese correo ya está registrado"
+        error.message?.includes(
+
+          "already registered"
+
         )
 
+      ){
+
+
+        alert(
+
+          "Ese correo ya está registrado"
+
+        )
+
+
       }
+
+
+
+
 
       else if(
-        error.code ===
-        "auth/weak-password"
-      ){
 
-        alert(
-          "La contraseña debe tener al menos 6 caracteres"
+        error.message?.toLowerCase()
+
+        .includes(
+
+          "password"
+
         )
 
+      ){
+
+
+        alert(
+
+          "La contraseña debe ser válida"
+
+        )
+
+
       }
+
+
+
+
 
       else{
 
+
+
         alert(
+
           "Error creando cuenta"
+
         )
+
 
       }
 
@@ -230,7 +368,15 @@ function Register() {
 
 
 
+
+
   }
+
+
+
+
+
+
 
 
 
@@ -243,10 +389,18 @@ function Register() {
 
 <>
 
+
 <Navbar />
 
 
+
+
+
 <main className="register-page">
+
+
+
+
 
 
 <h1>
@@ -256,11 +410,18 @@ Crear cuenta
 </h1>
 
 
+
+
+
 <p>
 
 Únete a Volando
 
 </p>
+
+
+
+
 
 
 
@@ -284,6 +445,10 @@ e=>setName(e.target.value)
 
 
 
+
+
+
+
 <input
 
 placeholder="Correo electrónico"
@@ -299,6 +464,10 @@ e=>setEmail(e.target.value)
 }
 
 />
+
+
+
+
 
 
 
@@ -325,6 +494,9 @@ e=>setPassword(e.target.value)
 
 
 
+
+
+
 <h3>
 
 ¿Cómo quieres usar Volando?
@@ -335,7 +507,17 @@ e=>setPassword(e.target.value)
 
 
 
+
+
+
+
 <div className="role-selector">
+
+
+
+
+
+
 
 
 
@@ -360,11 +542,15 @@ onClick={()=>setRole("cliente")}
 >
 
 
+
+
 <div className="role-icon">
 
 👤
 
 </div>
+
+
 
 
 <h3>
@@ -374,6 +560,8 @@ Cliente
 </h3>
 
 
+
+
 <p>
 
 Necesito enviar paquetes
@@ -381,7 +569,15 @@ Necesito enviar paquetes
 </p>
 
 
+
+
 </div>
+
+
+
+
+
+
 
 
 
@@ -410,11 +606,15 @@ onClick={()=>setRole("mensajero")}
 >
 
 
+
+
 <div className="role-icon">
 
 🛵
 
 </div>
+
+
 
 
 <h3>
@@ -424,6 +624,8 @@ Mensajero
 </h3>
 
 
+
+
 <p>
 
 Quiero realizar entregas
@@ -431,11 +633,25 @@ Quiero realizar entregas
 </p>
 
 
+
+
 </div>
 
 
 
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
 
 
 
@@ -446,6 +662,7 @@ Quiero realizar entregas
 {
 
 role==="mensajero" && (
+
 
 
 <>
@@ -461,7 +678,15 @@ role==="mensajero" && (
 
 
 
+
+
 <div className="vehicle-selector">
+
+
+
+
+
+
 
 
 
@@ -482,13 +707,18 @@ vehicle==="A pie"
 }
 
 onClick={()=>selectVehicle(
+
 "A pie",
+
 1
+
 )}
 
 >
 
+
 🚶
+
 
 <h3>
 
@@ -505,6 +735,10 @@ Sin vehículo
 
 
 </div>
+
+
+
+
 
 
 
@@ -527,13 +761,18 @@ vehicle==="Bicicleta"
 }
 
 onClick={()=>selectVehicle(
+
 "Bicicleta",
+
 1.15
+
 )}
 
 >
 
+
 🚲
+
 
 <h3>
 
@@ -550,6 +789,8 @@ Entrega rápida urbana
 
 
 </div>
+
+
 
 
 
@@ -574,13 +815,18 @@ vehicle==="Moto"
 }
 
 onClick={()=>selectVehicle(
+
 "Moto",
+
 1.40
+
 )}
 
 >
 
+
 🛵
+
 
 <h3>
 
@@ -597,6 +843,8 @@ Mayor velocidad
 
 
 </div>
+
+
 
 
 
@@ -621,13 +869,18 @@ vehicle==="Auto"
 }
 
 onClick={()=>selectVehicle(
+
 "Auto",
+
 1.80
+
 )}
 
 >
 
+
 🚗
+
 
 <h3>
 
@@ -647,8 +900,12 @@ Paquetes grandes
 
 
 
-</div>
 
+
+
+
+
+</div>
 
 
 </>
@@ -656,6 +913,8 @@ Paquetes grandes
 )
 
 }
+
+
 
 
 
@@ -678,7 +937,15 @@ Crear cuenta
 
 
 
+
+
+
+
+
 </main>
+
+
+
 
 
 </>
@@ -687,6 +954,9 @@ Crear cuenta
   )
 
 }
+
+
+
 
 
 export default Register

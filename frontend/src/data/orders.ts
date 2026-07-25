@@ -1,22 +1,6 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  updateDoc,
-  doc,
-  deleteDoc
-} from "firebase/firestore"
-
-import { db } from "../firebase/firestore"
-
-
-
+import { supabase } from "../supabase/client"
 
 export type OrderStatus =
-
   | "Buscando mensajero"
   | "Mensajero asignado"
   | "Recogiendo pedido"
@@ -24,619 +8,283 @@ export type OrderStatus =
   | "Entregado"
   | "Cancelado"
 
-
-
-
-
 export type Location = {
-
-  lat:number
-
-  lng:number
-
+  lat: number
+  lng: number
 }
-
-
-
-
-
-
-
 
 export type Order = {
+  id: number
 
+  clientId: number
+  clientName: string
 
-  id:number
+  pickupAddress?: string
+  destinationAddress?: string
 
+  pickup: Location
+  destination: Location
 
-  firebaseId?:string
+  route?: Location[]
 
+  distance: number
+  price: number
 
+  status: OrderStatus
 
-  clientId:number
+  messengerId?: number
+  messenger?: string
+  messengerVehicle?: string
+  messengerRating?: number
 
-  clientName:string
-
-
-
-  pickupAddress?:string
-
-  destinationAddress?:string
-
-
-
-  pickup:Location
-
-  destination:Location
-
-
-
-  route?:Location[]
-
-
-
-  distance:number
-
-  price:number
-
-  status:OrderStatus
-
-
-
-
-  messengerId?:number
-
-  messenger?:string
-
-  messengerVehicle?:string
-
-  messengerRating?:number
-
-
-
-
-  messengerLocation?:Location
-
-
+  messengerLocation?: Location
 }
 
+const ORDERS_TABLE = "orders"
 
-
-
-
-
-
-
-const ORDERS_COLLECTION="orders"
-
-
-
-
-
-
-
-
-
+// ===============================
 // CREAR PEDIDO
+// ===============================
 
+export async function createOrder(order: Order) {
+  const { error } = await supabase
+    .from(ORDERS_TABLE)
+    .insert({
+      id: order.id,
 
-export async function createOrder(
+      client_id: order.clientId,
+      client_name: order.clientName,
 
-order:Order
+      pickup_address: order.pickupAddress,
+      destination_address: order.destinationAddress,
 
-){
+      pickup: order.pickup,
+      destination: order.destination,
 
+      route: order.route,
 
-const result = await addDoc(
+      distance: order.distance,
+      price: order.price,
 
-collection(
+      status: order.status,
 
-db,
+      messenger_id: order.messengerId,
+      messenger: order.messenger,
+      messenger_vehicle: order.messengerVehicle,
+      messenger_rating: order.messengerRating,
 
-ORDERS_COLLECTION
+      messenger_location: order.messengerLocation
+    })
 
-),
-
-order
-
-)
-
-
-return result.id
-
-
+  if (error) {
+    console.error("Error creando pedido:", error)
+  }
 }
 
-
-
-
-
-
-
-
-
-
-
+// ===============================
 // OBTENER PEDIDOS
+// ===============================
 
+export async function getOrders(): Promise<Order[]> {
 
-export async function getOrders()
+  const { data, error } = await supabase
+    .from(ORDERS_TABLE)
+    .select("*")
+    .order("id", { ascending: false })
 
-:Promise<Order[]>{
+  if (error) {
+    console.error("Error obteniendo pedidos:", error)
+    return []
+  }
 
+  return (data ?? []).map(item => ({
+    id: item.id,
 
+    clientId: item.client_id,
+    clientName: item.client_name,
 
-const q=query(
+    pickupAddress: item.pickup_address,
+    destinationAddress: item.destination_address,
 
-collection(
+    pickup: item.pickup,
+    destination: item.destination,
 
-db,
+    route: item.route,
 
-ORDERS_COLLECTION
+    distance: Number(item.distance),
+    price: Number(item.price),
 
-),
+    status: item.status,
 
-orderBy(
+    messengerId: item.messenger_id,
+    messenger: item.messenger,
+    messengerVehicle: item.messenger_vehicle,
+    messengerRating: item.messenger_rating,
 
-"id",
-
-"desc"
-
-)
-
-)
-
-
-
-const snapshot=await getDocs(q)
-
-
-
-
-
-return snapshot.docs.map(item=>({
-
-
-firebaseId:item.id,
-
-
-...item.data()
-
-
-} as Order))
-
-
+    messengerLocation: item.messenger_location
+  }))
 }
 
-
-
-
-
-
-
-
-
-
-
-// BUSCAR POR ID
-
+// ===============================
+// BUSCAR PEDIDO
+// ===============================
 
 export async function getOrderById(
+  id: number
+): Promise<Order | undefined> {
 
-id:number
+  const { data, error } = await supabase
+    .from(ORDERS_TABLE)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle()
 
-)
+  if (error) {
+    console.error(error)
+    return undefined
+  }
 
-:Promise<Order|undefined>{
+  if (!data) {
+    return undefined
+  }
 
+  return {
+    id: data.id,
 
+    clientId: data.client_id,
+    clientName: data.client_name,
 
-const q=query(
+    pickupAddress: data.pickup_address,
+    destinationAddress: data.destination_address,
 
-collection(
+    pickup: data.pickup,
+    destination: data.destination,
 
-db,
+    route: data.route,
 
-ORDERS_COLLECTION
+    distance: Number(data.distance),
+    price: Number(data.price),
 
-),
+    status: data.status,
 
-where(
+    messengerId: data.messenger_id,
+    messenger: data.messenger,
+    messengerVehicle: data.messenger_vehicle,
+    messengerRating: data.messenger_rating,
 
-"id",
-
-"==",
-
-id
-
-)
-
-)
-
-
-
-
-
-const snapshot=await getDocs(q)
-
-
-
-if(snapshot.empty){
-
-return undefined
-
+    messengerLocation: data.messenger_location
+  }
 }
 
-
-
-
-const item=snapshot.docs[0]
-
-
-
-return {
-
-
-firebaseId:item.id,
-
-
-...item.data()
-
-
-} as Order
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
+// ===============================
 // ACEPTAR PEDIDO
-
+// ===============================
 
 export async function acceptOrder(
+  id: number,
+  messengerId: number,
+  messengerName: string,
+  vehicle: string
+) {
 
-id:number,
+  const { error } = await supabase
+    .from(ORDERS_TABLE)
+    .update({
+      status: "Mensajero asignado",
 
-messengerId:number,
+      messenger_id: messengerId,
+      messenger: messengerName,
+      messenger_vehicle: vehicle,
+      messenger_rating: 5
+    })
+    .eq("id", id)
 
-messengerName:string,
-
-vehicle:string
-
-){
-
-
-
-const q=query(
-
-collection(
-
-db,
-
-ORDERS_COLLECTION
-
-),
-
-where(
-
-"id",
-
-"==",
-
-id
-
-)
-
-)
-
-
-
-
-
-const snapshot=await getDocs(q)
-
-
-
-if(snapshot.empty){
-
-return
+  if (error) {
+    console.error("Error aceptando pedido:", error)
+  }
 
 }
 
-
-
-
-const ref=doc(
-
-db,
-
-ORDERS_COLLECTION,
-
-snapshot.docs[0].id
-
-)
-
-
-
-
-
-await updateDoc(
-
-ref,
-
-{
-
-
-status:"Mensajero asignado",
-
-messengerId,
-
-messenger:messengerName,
-
-messengerVehicle:vehicle,
-
-messengerRating:5
-
-
-}
-
-)
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
+// ===============================
 // CAMBIAR ESTADO
-
+// ===============================
 
 export async function updateOrderStatus(
+  id: number,
+  status: OrderStatus
+) {
 
-id:number,
+  const { error } = await supabase
+    .from(ORDERS_TABLE)
+    .update({
+      status
+    })
+    .eq("id", id)
 
-status:OrderStatus
-
-){
-
-
-
-const q=query(
-
-collection(
-
-db,
-
-ORDERS_COLLECTION
-
-),
-
-where(
-
-"id",
-
-"==",
-
-id
-
-)
-
-)
-
-
-
-
-
-const snapshot=await getDocs(q)
-
-
-
-if(snapshot.empty){
-
-return
+  if (error) {
+    console.error("Error actualizando estado:", error)
+  }
 
 }
 
-
-
-
-await updateDoc(
-
-doc(
-
-db,
-
-ORDERS_COLLECTION,
-
-snapshot.docs[0].id
-
-),
-
-{
-
-
-status
-
-
-}
-
-)
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
+// ===============================
 // CANCELAR PEDIDO
-
+// ===============================
 
 export async function cancelOrder(
+  id: number
+) {
 
-id:number
-
-){
-
-
-await updateOrderStatus(
-
-id,
-
-"Cancelado"
-
-)
-
+  await updateOrderStatus(
+    id,
+    "Cancelado"
+  )
 
 }
 
-
-
-
-
-
-
-
-
-
-
-// GPS MENSAJERO
-
+// ===============================
+// ACTUALIZAR GPS DEL MENSAJERO
+// ===============================
 
 export async function updateMessengerLocation(
+  id: number,
+  location: Location
+) {
 
-id:number,
+  const { error } = await supabase
+    .from(ORDERS_TABLE)
+    .update({
+      messenger_location: location
+    })
+    .eq("id", id)
 
-location:Location
-
-){
-
-
-
-const q=query(
-
-collection(
-
-db,
-
-ORDERS_COLLECTION
-
-),
-
-where(
-
-"id",
-
-"==",
-
-id
-
-)
-
-)
-
-
-
-
-
-const snapshot=await getDocs(q)
-
-
-
-if(snapshot.empty){
-
-return
+  if (error) {
+    console.error(
+      "Error actualizando ubicación:",
+      error
+    )
+  }
 
 }
 
-
-
-
-
-await updateDoc(
-
-doc(
-
-db,
-
-ORDERS_COLLECTION,
-
-snapshot.docs[0].id
-
-),
-
-{
-
-
-messengerLocation:location
-
-
-}
-
-)
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-// BORRAR PEDIDO
-
+// ===============================
+// ELIMINAR PEDIDO
+// ===============================
 
 export async function deleteOrder(
+  id: number
+) {
 
-firebaseId:string
+  const { error } = await supabase
+    .from(ORDERS_TABLE)
+    .delete()
+    .eq("id", id)
 
-){
-
-
-
-await deleteDoc(
-
-doc(
-
-db,
-
-ORDERS_COLLECTION,
-
-firebaseId
-
-)
-
-)
-
+  if (error) {
+    console.error(
+      "Error eliminando pedido:",
+      error
+    )
+  }
 
 }

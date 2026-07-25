@@ -24,13 +24,13 @@ import {
 
 
 import {
-  getFirebaseUsers
-} from "../data/firebaseUsers"
+  getSupabaseUsers
+} from "../data/supabaseUsers"
 
 
 import type {
-  FirebaseUser
-} from "../data/firebaseUsers"
+  SupabaseUser
+} from "../data/supabaseUsers"
 
 
 
@@ -49,6 +49,7 @@ import {
 
 
 
+
 function Client(){
 
 
@@ -59,7 +60,7 @@ const user = getCurrentUser()
 
 
 
-const [users,setUsers] = useState<FirebaseUser[]>([])
+const [users,setUsers] = useState<SupabaseUser[]>([])
 
 
 
@@ -97,11 +98,13 @@ const [addresses,setAddresses] = useState<string[]>([])
 
 
 
+
+
 async function loadUsers(){
 
   try{
 
-    const data = await getFirebaseUsers()
+    const data = await getSupabaseUsers()
 
     setUsers(data)
 
@@ -153,6 +156,9 @@ null
 
 
 
+
+
+
 useEffect(()=>{
 
 
@@ -189,8 +195,6 @@ o=>o.id===id
 
 
 
-
-// SI EL PEDIDO FUE BORRADO EN FIREBASE
 
 if(!order){
 
@@ -260,6 +264,7 @@ loadOrder()
 
 
 },[])
+
 
 
 
@@ -346,7 +351,6 @@ route.coordinates
 
 
 
-// CAMBIO MAPA
 
 
 async function handleMapChange(
@@ -412,7 +416,7 @@ setAddresses(names)
 
 
 
-// CREAR PEDIDO
+
 
 
 async function sendOrder(){
@@ -532,6 +536,8 @@ status:
 
 
 
+
+
 setCurrentOrder(null)
 
 
@@ -566,7 +572,8 @@ setSearching(true)
 
 
 
-// ESCUCHAR PEDIDO
+
+
 
 
 useEffect(()=>{
@@ -598,8 +605,6 @@ o=>o.id===orderId
 
 
 
-
-// PEDIDO BORRADO
 
 if(!order){
 
@@ -660,6 +665,8 @@ localStorage.removeItem(
 
 
 
+
+
 }
 
 
@@ -689,6 +696,7 @@ return()=>clearInterval(timer)
 
 
 },[orderId])
+
 
 
 
@@ -739,6 +747,8 @@ Hola {user?.name} 👋
 Solicitar envío
 
 </h2>
+
+
 
 
 
@@ -841,9 +851,6 @@ CUP
 
 
 
-
-
-
 {
 
 currentOrder?.status==="Buscando mensajero"
@@ -871,8 +878,6 @@ Tu pedido está disponible.
 
 
 }
-
-
 
 
 
@@ -1076,7 +1081,6 @@ Solicitar mensajero
 
 
 
-
 </section>
 
 
@@ -1096,6 +1100,7 @@ Solicitar mensajero
 Mapa de La Habana
 
 </h3>
+
 
 
 

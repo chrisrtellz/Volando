@@ -17,11 +17,14 @@ import {
 
 
 
+
+
 function Login(){
 
 
 
 const navigate = useNavigate()
+
 
 
 
@@ -53,6 +56,8 @@ setError("")
 
 
 
+
+
 const user = await login(
 
 email,
@@ -66,12 +71,16 @@ password
 
 
 
+
+
+
 if(!user){
+
 
 
 setError(
 
-"Correo o contraseña incorrectos"
+"Error iniciando sesión. Revisa consola."
 
 )
 
@@ -108,6 +117,8 @@ return
 
 
 
+
+
 if(user.role==="cliente"){
 
 
@@ -127,6 +138,8 @@ return
 
 
 
+
+
 if(user.role==="mensajero"){
 
 
@@ -138,6 +151,9 @@ return
 
 
 }
+
+
+
 
 
 
@@ -163,7 +179,9 @@ return(
 
 
 
+
 <main className="register-page">
+
 
 
 
@@ -174,6 +192,8 @@ return(
 Iniciar sesión
 
 </h1>
+
+
 
 
 
@@ -197,13 +217,17 @@ Accede a tu cuenta de Volando.
 <input
 
 
+
 placeholder="Correo"
+
 
 
 type="email"
 
 
+
 value={email}
+
 
 
 onChange={
@@ -213,7 +237,11 @@ e=>setEmail(e.target.value)
 }
 
 
+
 />
+
+
+
 
 
 
@@ -226,13 +254,17 @@ e=>setEmail(e.target.value)
 <input
 
 
+
 placeholder="Contraseña"
+
 
 
 type="password"
 
 
+
 value={password}
+
 
 
 onChange={
@@ -240,6 +272,7 @@ onChange={
 e=>setPassword(e.target.value)
 
 }
+
 
 
 />
@@ -253,9 +286,14 @@ e=>setPassword(e.target.value)
 
 
 
+
+
+
 {
 
+
 error &&
+
 
 
 <p style={{color:"red"}}>
@@ -265,6 +303,7 @@ error &&
 
 
 </p>
+
 
 
 }
@@ -277,19 +316,27 @@ error &&
 
 
 
+
+
+
 <button
+
 
 
 className="primary"
 
 
+
 onClick={handleLogin}
+
 
 
 >
 
 
+
 Entrar
+
 
 
 </button>
@@ -301,7 +348,9 @@ Entrar
 
 
 
+
 </main>
+
 
 
 
