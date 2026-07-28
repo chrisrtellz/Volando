@@ -2,6 +2,14 @@ import Navbar from '../components/Navbar'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import {
+  Footprints,
+  Bike,
+  Car,
+  UserRound,
+  PackageCheck
+} from "lucide-react"
+
 
 import {
   supabase
@@ -19,140 +27,136 @@ import {
 
 
 
-function Register() {
+function Register(){
 
 
-  const navigate = useNavigate()
 
+const navigate = useNavigate()
 
 
-  const [name,setName] = useState("")
 
-  const [email,setEmail] = useState("")
 
-  const [password,setPassword] = useState("")
 
+const [name,setName] = useState("")
 
+const [email,setEmail] = useState("")
 
-  const [role,setRole] = useState<
-    "cliente" | "mensajero"
-  >("cliente")
+const [password,setPassword] = useState("")
 
 
 
-  const [vehicle,setVehicle] = useState("")
 
-  const [vehicleMultiplier,setVehicleMultiplier] = useState(1)
 
+const [role,setRole] = useState<
+"cliente" | "mensajero"
+>("cliente")
 
 
 
 
 
+const [vehicle,setVehicle] = useState("")
 
+const [vehicleMultiplier,setVehicleMultiplier] = useState(1)
 
-  function selectVehicle(
 
-    name:string,
 
-    multiplier:number
 
-  ){
 
-    setVehicle(name)
 
-    setVehicleMultiplier(multiplier)
 
-  }
 
+function selectVehicle(
 
+name:string,
 
+multiplier:number
 
+){
 
 
+setVehicle(name)
 
+setVehicleMultiplier(multiplier)
 
 
-  async function register(){
+}
 
 
 
-    if(
-      !name ||
-      !email ||
-      !password
-    ){
 
-      alert(
-        "Completa todos los campos"
-      )
 
-      return
 
-    }
 
 
 
+async function register(){
 
 
 
+if(
+!name ||
+!email ||
+!password
+){
 
-    if(
-      role==="mensajero" &&
-      vehicle===""
+alert(
+"Completa todos los campos"
+)
 
-    ){
+return
 
-      alert(
-        "Selecciona un vehículo"
-      )
+}
 
-      return
 
-    }
 
 
 
 
 
+if(
 
+role==="mensajero" &&
 
+vehicle===""
 
+){
 
-    try{
+alert(
+"Selecciona un vehículo"
+)
 
+return
 
+}
 
 
 
-      // CREAR USUARIO EN SUPABASE AUTH
 
 
-      const {
 
-        data,
 
-        error
 
-      } = await supabase.auth.signUp({
 
-        email,
+try{
 
-        password
 
-      })
 
 
 
+const {
 
+data,
 
+error
 
+}=await supabase.auth.signUp({
 
-      if(error){
+email,
 
-        throw error
+password
 
-      }
+})
 
 
 
@@ -160,25 +164,27 @@ function Register() {
 
 
 
+if(error){
 
-      if(!data.user){
+throw error
 
+}
 
-        throw new Error(
-          "No se pudo crear el usuario en Auth"
-        )
 
 
-      }
 
 
 
 
 
+if(!data.user){
 
+throw new Error(
+"No se pudo crear el usuario en Auth"
+)
 
+}
 
-      const uid = data.user.id
 
 
 
@@ -186,191 +192,188 @@ function Register() {
 
 
 
-      // GUARDAR PERFIL EN TABLA USERS
+const uid=data.user.id
 
 
-      const profile = await createSupabaseUser({
 
 
 
-        id:Date.now(),
 
 
+const profile = await createSupabaseUser({
 
-        uid,
 
 
+id:Date.now(),
 
-        name,
 
 
+uid,
 
-        email,
 
 
+name,
 
-        role,
 
 
+email,
 
-        vehicle,
 
 
+role,
 
-        vehicleMultiplier,
 
 
+vehicle,
 
-        available:false,
 
 
+vehicleMultiplier,
 
-        active:true
 
 
+available:false,
 
-      })
 
 
+active:true,
 
 
 
 
 
+// DATOS PARA VERIFICACION
 
-      if(!profile){
+phone:"",
 
+address:"",
 
-        throw new Error(
+idDocument:"",
 
-          "No se pudo guardar el perfil en users"
+vehiclePlate:"",
 
-        )
+licenseNumber:"",
 
 
-      }
 
 
 
+// CLIENTE APROBADO
+// MENSAJERO PENDIENTE
 
 
+verified:
 
+role==="cliente",
 
 
 
 
-      alert(
 
-        "Cuenta creada correctamente"
+profileComplete:
 
-      )
+role==="cliente",
 
 
 
 
 
-      navigate("/login")
+verificationStatus:
 
+role==="mensajero"
 
+?
 
+"pending"
 
+:
 
+"approved"
 
 
 
-    }
 
+})
 
-    catch(error:any){
 
 
 
-      console.error(
 
-        "ERROR REGISTRO:",
 
-        error
 
-      )
 
 
+if(!profile){
 
 
+throw new Error(
 
+"No se pudo guardar el perfil"
 
+)
 
-      if(
 
-        error.message?.includes(
+}
 
-          "already registered"
 
-        )
 
-      ){
 
 
-        alert(
 
-          "Ese correo ya está registrado"
 
-        )
 
+alert(
 
-      }
+"Cuenta creada correctamente"
 
+)
 
 
 
 
-      else if(
 
-        error.message?.toLowerCase()
+navigate("/login")
 
-        .includes(
 
-          "password"
 
-        )
 
-      ){
 
 
-        alert(
 
-          "La contraseña debe ser válida"
+}
 
-        )
+catch(error:any){
 
 
-      }
 
+console.error(
 
+"ERROR REGISTRO:",
 
+error
 
+)
 
-      else{
 
 
 
-        alert(
 
-          "Error creando cuenta"
+alert(
 
-        )
+"Error creando cuenta"
 
+)
 
-      }
 
 
+}
 
-    }
 
 
 
+}
 
 
-  }
 
 
 
@@ -378,13 +381,7 @@ function Register() {
 
 
 
-
-
-
-
-
-
-  return(
+return(
 
 
 <>
@@ -403,11 +400,15 @@ function Register() {
 
 
 
+
+
 <h1>
 
 Crear cuenta
 
 </h1>
+
+
 
 
 
@@ -429,9 +430,12 @@ Crear cuenta
 
 <input
 
+
 placeholder="Nombre"
 
+
 value={name}
+
 
 onChange={
 
@@ -439,7 +443,9 @@ e=>setName(e.target.value)
 
 }
 
+
 />
+
 
 
 
@@ -451,11 +457,15 @@ e=>setName(e.target.value)
 
 <input
 
+
 placeholder="Correo electrónico"
+
 
 type="email"
 
+
 value={email}
+
 
 onChange={
 
@@ -463,7 +473,9 @@ e=>setEmail(e.target.value)
 
 }
 
+
 />
+
 
 
 
@@ -475,11 +487,15 @@ e=>setEmail(e.target.value)
 
 <input
 
+
 placeholder="Contraseña"
+
 
 type="password"
 
+
 value={password}
+
 
 onChange={
 
@@ -487,7 +503,10 @@ e=>setPassword(e.target.value)
 
 }
 
+
 />
+
+
 
 
 
@@ -511,6 +530,8 @@ e=>setPassword(e.target.value)
 
 
 
+
+
 <div className="role-selector">
 
 
@@ -521,7 +542,9 @@ e=>setPassword(e.target.value)
 
 
 
+
 <div
+
 
 className={
 
@@ -537,18 +560,27 @@ role==="cliente"
 
 }
 
+
 onClick={()=>setRole("cliente")}
+
 
 >
 
 
 
 
+
 <div className="role-icon">
 
-👤
+
+<UserRound size={50}/>
+
 
 </div>
+
+
+
+
 
 
 
@@ -562,11 +594,18 @@ Cliente
 
 
 
+
+
+
+
 <p>
 
 Necesito enviar paquetes
 
 </p>
+
+
+
 
 
 
@@ -587,6 +626,7 @@ Necesito enviar paquetes
 
 <div
 
+
 className={
 
 role==="mensajero"
@@ -601,18 +641,27 @@ role==="mensajero"
 
 }
 
+
 onClick={()=>setRole("mensajero")}
+
 
 >
 
 
 
 
+
 <div className="role-icon">
 
-🛵
+
+<PackageCheck size={50}/>
+
 
 </div>
+
+
+
+
 
 
 
@@ -626,6 +675,10 @@ Mensajero
 
 
 
+
+
+
+
 <p>
 
 Quiero realizar entregas
@@ -635,7 +688,11 @@ Quiero realizar entregas
 
 
 
+
+
+
 </div>
+
 
 
 
@@ -661,11 +718,17 @@ Quiero realizar entregas
 
 {
 
-role==="mensajero" && (
 
+role==="mensajero" &&
+
+(
 
 
 <>
+
+
+
+
 
 
 <h3>
@@ -673,6 +736,8 @@ role==="mensajero" && (
 ¿Con qué realizarás las entregas?
 
 </h3>
+
+
 
 
 
@@ -690,7 +755,9 @@ role==="mensajero" && (
 
 
 
+
 <div
+
 
 className={
 
@@ -706,6 +773,7 @@ vehicle==="A pie"
 
 }
 
+
 onClick={()=>selectVehicle(
 
 "A pie",
@@ -714,10 +782,24 @@ onClick={()=>selectVehicle(
 
 )}
 
+
 >
 
 
-🚶
+
+
+
+<div className="role-icon">
+
+
+<Footprints size={50}/>
+
+
+</div>
+
+
+
+
 
 
 <h3>
@@ -727,11 +809,18 @@ A pie
 </h3>
 
 
+
+
+
+
 <p>
 
 Sin vehículo
 
 </p>
+
+
+
 
 
 </div>
@@ -744,7 +833,14 @@ Sin vehículo
 
 
 
+
+
+
+
+
+
 <div
+
 
 className={
 
@@ -760,6 +856,7 @@ vehicle==="Bicicleta"
 
 }
 
+
 onClick={()=>selectVehicle(
 
 "Bicicleta",
@@ -768,10 +865,24 @@ onClick={()=>selectVehicle(
 
 )}
 
+
 >
 
 
-🚲
+
+
+
+<div className="role-icon">
+
+
+<Bike size={50}/>
+
+
+</div>
+
+
+
+
 
 
 <h3>
@@ -781,11 +892,18 @@ Bicicleta
 </h3>
 
 
+
+
+
+
 <p>
 
 Entrega rápida urbana
 
 </p>
+
+
+
 
 
 </div>
@@ -798,7 +916,13 @@ Entrega rápida urbana
 
 
 
+
+
+
+
+
 <div
+
 
 className={
 
@@ -814,6 +938,7 @@ vehicle==="Moto"
 
 }
 
+
 onClick={()=>selectVehicle(
 
 "Moto",
@@ -822,10 +947,24 @@ onClick={()=>selectVehicle(
 
 )}
 
+
 >
 
 
-🛵
+
+
+
+<div className="role-icon">
+
+
+<Bike size={50}/>
+
+
+</div>
+
+
+
+
 
 
 <h3>
@@ -835,11 +974,18 @@ Moto
 </h3>
 
 
+
+
+
+
 <p>
 
 Mayor velocidad
 
 </p>
+
+
+
 
 
 </div>
@@ -852,7 +998,14 @@ Mayor velocidad
 
 
 
+
+
+
+
+
+
 <div
+
 
 className={
 
@@ -868,6 +1021,7 @@ vehicle==="Auto"
 
 }
 
+
 onClick={()=>selectVehicle(
 
 "Auto",
@@ -876,10 +1030,24 @@ onClick={()=>selectVehicle(
 
 )}
 
+
 >
 
 
-🚗
+
+
+
+<div className="role-icon">
+
+
+<Car size={50}/>
+
+
+</div>
+
+
+
+
 
 
 <h3>
@@ -889,6 +1057,10 @@ Auto
 </h3>
 
 
+
+
+
+
 <p>
 
 Paquetes grandes
@@ -896,16 +1068,27 @@ Paquetes grandes
 </p>
 
 
-</div>
-
-
-
-
-
 
 
 
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
 
 
 </>
@@ -924,9 +1107,12 @@ Paquetes grandes
 
 <button
 
+
 className="primary"
 
+
 onClick={register}
+
 
 >
 
@@ -951,7 +1137,8 @@ Crear cuenta
 </>
 
 
-  )
+)
+
 
 }
 

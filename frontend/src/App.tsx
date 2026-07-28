@@ -18,6 +18,8 @@ import Admin from './pages/Admin'
 import ClientPanel from './pages/ClientPanel'
 import MessengerPanel from './pages/MessengerPanel'
 
+import MessengerVerification from './pages/MessengerVerification'
+
 
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ProtectedAdmin from "./components/auth/ProtectedAdmin"
@@ -26,56 +28,59 @@ import ProtectedAdmin from "./components/auth/ProtectedAdmin"
 
 
 
+
+
+
 function App() {
 
 
-  return (
+return(
 
 
-    <BrowserRouter>
+<BrowserRouter>
 
 
-      <Routes>
+<Routes>
 
 
 
 
 
-        <Route
+<Route
 
-          path="/"
+path="/"
 
-          element={<Home />}
+element={<Home />}
 
-        />
+/>
 
 
 
 
 
 
-        <Route
 
-          path="/login"
+<Route
 
-          element={<Login />}
+path="/login"
 
-        />
+element={<Login />}
 
+/>
 
 
 
 
 
-        <Route
 
-          path="/register"
 
-          element={<Register />}
+<Route
 
-        />
+path="/register"
 
+element={<Register />}
 
+/>
 
 
 
@@ -83,179 +88,219 @@ function App() {
 
 
 
-        {/* CLIENTE - SOLICITAR ENVIOS */}
 
 
-        <Route
 
+{/* CLIENTE - SOLICITAR ENVIOS */}
 
-          path="/client"
 
+<Route
 
-          element={
 
+path="/client"
 
-            <ProtectedRoute>
 
+element={
 
-              <Client />
 
+<ProtectedRoute role="cliente">
 
-            </ProtectedRoute>
 
+<Client />
 
-          }
 
+</ProtectedRoute>
 
-        />
 
+}
 
 
+/>
 
 
 
 
 
-        {/* PANEL CLIENTE */}
 
 
-        <Route
 
 
-          path="/client-panel"
+{/* PANEL CLIENTE */}
 
 
-          element={
+<Route
 
 
-            <ProtectedRoute>
+path="/client-panel"
 
 
-              <ClientPanel />
+element={
 
 
-            </ProtectedRoute>
+<ProtectedRoute role="cliente">
 
 
-          }
+<ClientPanel />
 
 
-        />
+</ProtectedRoute>
 
 
+}
 
 
+/>
 
 
 
 
 
-        {/* MENSAJERO - TRABAJO */}
 
 
-        <Route
 
 
-          path="/messenger"
+{/* MENSAJERO - PEDIDOS */}
 
 
-          element={
+<Route
 
 
-            <ProtectedRoute>
+path="/messenger"
 
 
-              <Messenger />
+element={
 
 
-            </ProtectedRoute>
+<ProtectedRoute role="mensajero">
 
 
-          }
+<Messenger />
 
 
-        />
+</ProtectedRoute>
 
 
+}
 
 
+/>
 
 
 
 
 
-        {/* PANEL MENSAJERO */}
 
 
-        <Route
 
 
-          path="/messenger-panel"
+{/* VERIFICACION MENSAJERO */}
 
 
-          element={
+<Route
 
 
-            <ProtectedRoute>
+path="/messenger-verification"
 
 
-              <MessengerPanel />
+element={
 
 
-            </ProtectedRoute>
+<ProtectedRoute role="mensajero">
 
 
-          }
+<MessengerVerification />
 
 
-        />
+</ProtectedRoute>
 
 
+}
 
 
+/>
 
 
 
 
 
-        {/* ADMIN */}
 
 
-        <Route
 
 
-          path="/admin"
+{/* PANEL MENSAJERO */}
 
 
-          element={
+<Route
 
 
-            <ProtectedAdmin>
+path="/messenger-panel"
 
 
-              <Admin />
+element={
 
 
-            </ProtectedAdmin>
+<ProtectedRoute role="mensajero">
 
 
-          }
+<MessengerPanel />
 
 
-        />
+</ProtectedRoute>
 
 
+}
 
 
+/>
 
 
-      </Routes>
 
 
-    </BrowserRouter>
 
 
-  )
+
+
+
+{/* ADMIN */}
+
+
+<Route
+
+
+path="/admin"
+
+
+element={
+
+
+<ProtectedAdmin>
+
+
+<Admin />
+
+
+</ProtectedAdmin>
+
+
+}
+
+
+/>
+
+
+
+
+
+
+
+</Routes>
+
+
+</BrowserRouter>
+
+
+)
+
 
 }
 

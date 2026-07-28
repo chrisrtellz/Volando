@@ -15,6 +15,15 @@ export type UserRole =
 
 
 
+export type VerificationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+
+
+
+
+
 
 
 
@@ -37,6 +46,7 @@ export type SupabaseUser = {
   role:UserRole
 
 
+
   vehicle:string
 
 
@@ -49,8 +59,40 @@ export type SupabaseUser = {
   active:boolean
 
 
-}
 
+
+
+
+  phone?:string
+
+
+  address?:string
+
+
+  idDocument?:string
+
+
+  vehiclePlate?:string | null
+
+
+  licenseNumber?:string | null
+
+
+
+
+
+
+  verified:boolean
+
+
+  profileComplete:boolean
+
+
+  verificationStatus:VerificationStatus
+
+
+
+}
 
 
 
@@ -75,63 +117,59 @@ const USERS_TABLE = "users"
 
 export async function createSupabaseUser(
 
-  user:SupabaseUser
+user:SupabaseUser
 
 ){
 
 
 
-  const {
+const {
 
-    data,
+data,
 
-    error
+error
 
-  } = await supabase
+}=await supabase
 
-  .from(USERS_TABLE)
+.from(USERS_TABLE)
 
-  .insert(user)
+.insert(user)
 
-  .select()
+.select()
 
-  .single()
-
-
+.single()
 
 
 
 
 
-  if(error){
+if(error){
 
 
-    console.error(
+console.error(
 
-      "Error creando usuario en Supabase:",
+"Error creando usuario en Supabase:",
 
-      error
+error
 
-    )
-
-
-    throw error
+)
 
 
-  }
+throw error
 
 
-
+}
 
 
 
 
 
-  return data
+return data
 
 
 
 }
+
 
 
 
@@ -154,20 +192,17 @@ export async function getSupabaseUsers()
 
 
 
+const {
 
+data,
 
-  const {
+error
 
-    data,
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
-
-  .from(USERS_TABLE)
-
-  .select("*")
-
+.select("*")
 
 
 
@@ -175,26 +210,22 @@ export async function getSupabaseUsers()
 
 
 
-  if(error){
+if(error){
 
 
+console.error(
 
-    console.error(
+"Error obteniendo usuarios:",
 
-      "Error obteniendo usuarios:",
+error
 
-      error
-
-    )
-
+)
 
 
-    return []
+return []
 
 
-
-  }
-
+}
 
 
 
@@ -202,7 +233,7 @@ export async function getSupabaseUsers()
 
 
 
-  return data as SupabaseUser[]
+return data as SupabaseUser[]
 
 
 
@@ -226,7 +257,7 @@ export async function getSupabaseUsers()
 
 export async function getSupabaseUserByEmail(
 
-  email:string
+email:string
 
 )
 
@@ -234,55 +265,27 @@ export async function getSupabaseUserByEmail(
 
 
 
+const {
 
+data,
 
-  const {
+error
 
-    data,
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
+.select("*")
 
-  .from(USERS_TABLE)
+.eq(
 
-  .select("*")
+"email",
 
-  .eq(
+email
 
-    "email",
+)
 
-    email
-
-  )
-
-  .single()
-
-
-
-
-
-
-
-  if(error){
-
-
-
-    console.error(
-
-      "Error buscando email:",
-
-      error
-
-    )
-
-
-
-    return null
-
-
-
-  }
+.single()
 
 
 
@@ -290,8 +293,29 @@ export async function getSupabaseUserByEmail(
 
 
 
+if(error){
 
-  return data as SupabaseUser
+
+console.error(
+
+"Error buscando email:",
+
+error
+
+)
+
+
+return null
+
+
+}
+
+
+
+
+
+
+return data as SupabaseUser
 
 
 
@@ -307,14 +331,15 @@ export async function getSupabaseUserByEmail(
 
 
 
+
 // ===============================
-// BUSCAR POR UID SUPABASE AUTH
+// BUSCAR POR UID
 // ===============================
 
 
 export async function getSupabaseUserByUid(
 
-  uid:string
+uid:string
 
 )
 
@@ -322,55 +347,27 @@ export async function getSupabaseUserByUid(
 
 
 
+const {
 
+data,
 
-  const {
+error
 
-    data,
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
+.select("*")
 
-  .from(USERS_TABLE)
+.eq(
 
-  .select("*")
+"uid",
 
-  .eq(
+uid
 
-    "uid",
+)
 
-    uid
-
-  )
-
-  .single()
-
-
-
-
-
-
-
-  if(error){
-
-
-
-    console.error(
-
-      "Error buscando UID:",
-
-      error
-
-    )
-
-
-
-    return null
-
-
-
-  }
+.single()
 
 
 
@@ -378,8 +375,29 @@ export async function getSupabaseUserByUid(
 
 
 
+if(error){
 
-  return data as SupabaseUser
+
+console.error(
+
+"Error buscando UID:",
+
+error
+
+)
+
+
+return null
+
+
+}
+
+
+
+
+
+
+return data as SupabaseUser
 
 
 
@@ -397,44 +415,41 @@ export async function getSupabaseUserByUid(
 
 
 // ===============================
-// CAMBIAR DISPONIBILIDAD MENSAJERO
+// CAMBIAR DISPONIBILIDAD
 // ===============================
 
 
 export async function updateSupabaseAvailability(
 
-  id:number,
+id:number,
 
-  status:boolean
+status:boolean
 
 ){
 
 
 
+const {
 
+error
 
-  const {
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
+.update({
 
-  .from(USERS_TABLE)
+available:status
 
-  .update({
+})
 
-    available:status
+.eq(
 
-  })
+"id",
 
-  .eq(
+id
 
-    "id",
-
-    id
-
-  )
-
+)
 
 
 
@@ -442,23 +457,24 @@ export async function updateSupabaseAvailability(
 
 
 
-  if(error){
+if(error){
 
 
-    console.error(
+console.error(
 
-      "Error actualizando disponibilidad:",
+"Error actualizando disponibilidad:",
 
-      error
+error
 
-    )
+)
 
 
-  }
+}
 
 
 
 }
+
 
 
 
@@ -477,40 +493,37 @@ export async function updateSupabaseAvailability(
 
 export async function toggleSupabaseUserActive(
 
-  id:number
+id:number
 
 ){
 
 
 
+const {
 
+data,
 
-  const {
+error
 
-    data,
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
+.select(
 
-  .from(USERS_TABLE)
+"active"
 
-  .select(
+)
 
-    "active"
+.eq(
 
-  )
+"id",
 
-  .eq(
+id
 
-    "id",
+)
 
-    id
-
-  )
-
-  .single()
-
+.single()
 
 
 
@@ -518,24 +531,22 @@ export async function toggleSupabaseUserActive(
 
 
 
-  if(error){
+if(error){
 
 
-    console.error(
+console.error(
 
-      "Error leyendo usuario:",
+"Error leyendo usuario:",
 
-      error
+error
 
-    )
-
-
-    return
+)
 
 
-  }
+return
 
 
+}
 
 
 
@@ -543,23 +554,23 @@ export async function toggleSupabaseUserActive(
 
 
 
-  const result = await supabase
+const result = await supabase
 
-  .from(USERS_TABLE)
+.from(USERS_TABLE)
 
-  .update({
+.update({
 
-    active:!(data.active ?? true)
+active:!(data.active ?? true)
 
-  })
+})
 
-  .eq(
+.eq(
 
-    "id",
+"id",
 
-    id
+id
 
-  )
+)
 
 
 
@@ -568,19 +579,216 @@ export async function toggleSupabaseUserActive(
 
 
 
-  if(result.error){
+if(result.error){
 
 
-    console.error(
+console.error(
 
-      "Error cambiando estado:",
+"Error cambiando estado:",
 
-      result.error
+result.error
 
-    )
+)
 
 
-  }
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// ===============================
+// APROBAR / RECHAZAR MENSAJERO
+// ===============================
+
+
+export async function updateMessengerVerification(
+
+id:number,
+
+status:
+
+"approved"
+
+|
+
+"rejected"
+
+){
+
+
+
+const {
+
+error
+
+}=await supabase
+
+.from(USERS_TABLE)
+
+.update({
+
+verificationStatus:status,
+
+
+verified:status==="approved"
+
+
+
+})
+
+.eq(
+
+"id",
+
+id
+
+)
+
+
+
+
+
+
+
+
+if(error){
+
+
+console.error(
+
+"Error actualizando verificación:",
+
+error
+
+)
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// ===============================
+// ACTUALIZAR PERFIL MENSAJERO
+// ===============================
+
+
+export async function updateMessengerProfile(
+
+id:number,
+
+profile:{
+
+
+phone:string
+
+
+address:string
+
+
+idDocument:string
+
+
+vehiclePlate:string | null
+
+
+licenseNumber:string | null
+
+
+
+}
+
+){
+
+
+
+const {
+
+error
+
+}=await supabase
+
+.from(USERS_TABLE)
+
+.update({
+
+
+phone:profile.phone,
+
+
+address:profile.address,
+
+
+idDocument:profile.idDocument,
+
+
+vehiclePlate:profile.vehiclePlate,
+
+
+licenseNumber:profile.licenseNumber,
+
+
+
+profileComplete:true,
+
+
+verificationStatus:"pending"
+
+
+
+})
+
+.eq(
+
+"id",
+
+id
+
+)
+
+
+
+
+
+
+
+if(error){
+
+
+console.error(
+
+"Error actualizando perfil:",
+
+error
+
+)
+
+
+}
 
 
 
@@ -604,32 +812,29 @@ export async function toggleSupabaseUserActive(
 
 export async function deleteSupabaseUser(
 
-  id:number
+id:number
 
 ){
 
 
 
+const {
 
+error
 
-  const {
+}=await supabase
 
-    error
+.from(USERS_TABLE)
 
-  } = await supabase
+.delete()
 
-  .from(USERS_TABLE)
+.eq(
 
-  .delete()
+"id",
 
-  .eq(
+id
 
-    "id",
-
-    id
-
-  )
-
+)
 
 
 
@@ -637,19 +842,19 @@ export async function deleteSupabaseUser(
 
 
 
-  if(error){
+if(error){
 
 
-    console.error(
+console.error(
 
-      "Error eliminando usuario:",
+"Error eliminando usuario:",
 
-      error
+error
 
-    )
+)
 
 
-  }
+}
 
 
 

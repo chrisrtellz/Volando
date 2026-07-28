@@ -1,36 +1,117 @@
 import { Navigate } from "react-router-dom"
-import { isLogged } from "../../data/auth"
+
+import {
+  getCurrentUser
+} from "../../data/auth"
+
 
 
 type Props = {
 
-  children: React.ReactNode
+children: React.ReactNode
+
+role?:
+| "cliente"
+| "mensajero"
+| "admin"
 
 }
 
 
 
-function ProtectedRoute({children}:Props){
 
 
-  const logged = isLogged()
+function ProtectedRoute({
 
+children,
 
+role
 
-  if(!logged){
-
-
-    return <Navigate to="/login" />
-
-
-  }
+}:Props){
 
 
 
-  return children
+const user = getCurrentUser()
+
+
+
+
+
+
+// NO HAY SESIÓN
+
+if(!user){
+
+
+return <Navigate to="/login" />
 
 
 }
+
+
+
+
+
+
+
+
+// CONTROL DE ROL
+
+
+if(
+
+role &&
+
+user.role!==role
+
+){
+
+
+
+if(user.role==="cliente"){
+
+
+return <Navigate to="/client-panel" />
+
+
+}
+
+
+
+if(user.role==="mensajero"){
+
+
+return <Navigate to="/messenger" />
+
+
+}
+
+
+
+if(user.role==="admin"){
+
+
+return <Navigate to="/admin" />
+
+
+}
+
+
+}
+
+
+
+
+
+
+
+
+return children
+
+
+
+}
+
 
 
 export default ProtectedRoute

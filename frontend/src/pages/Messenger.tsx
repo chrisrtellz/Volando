@@ -30,22 +30,38 @@ import {
 } from 'react'
 
 
+import {
+  useNavigate
+} from 'react-router-dom'
+
+
+
+
 
 
 
 function Messenger(){
 
 
+
 const user = getCurrentUser()
 
 
+const navigate = useNavigate()
 
+
+
+
+
+
+
+const [waitingApproval,setWaitingApproval] = useState(false)
 
 
 
 const [available,setAvailable] = useState(
 
-  user?.available ?? false
+user?.available ?? false
 
 )
 
@@ -60,13 +76,111 @@ const [orders,setOrders] = useState<Order[]>([])
 
 
 
+
+
+// ===============================
+// CONTROL VERIFICACION
+// ===============================
+
+
+useEffect(()=>{
+
+
+if(!user){
+
+return
+
+}
+
+
+
+
+if(
+user.role==="mensajero"
+){
+
+
+
+if(
+user.profileComplete===false
+
+){
+
+navigate(
+"/messenger-verification"
+)
+
+return
+
+}
+
+
+
+
+if(
+
+user.profileComplete===true &&
+
+user.verified===false
+
+){
+
+
+setWaitingApproval(true)
+
+
+return
+
+}
+
+
+}
+
+
+
+},[user,navigate])
+
+
+
+
+
+
+
+
+
+
+
+
+// ===============================
+// CARGAR PEDIDOS
+// ===============================
+
+
 async function loadOrders(){
+
+
+
+if(
+
+!user ||
+
+user.role!=="mensajero" ||
+
+user.verified!==true
+
+){
+
+return
+
+}
+
 
 
 const data = await getOrders()
 
 
 setOrders(data)
+
 
 
 }
@@ -80,6 +194,13 @@ setOrders(data)
 
 
 useEffect(()=>{
+
+
+if(
+
+user?.verified===true
+
+){
 
 
 loadOrders()
@@ -100,7 +221,10 @@ return()=>clearInterval(timer)
 
 
 
-},[])
+}
+
+
+},[user])
 
 
 
@@ -108,6 +232,14 @@ return()=>clearInterval(timer)
 
 
 
+
+
+
+
+
+// ===============================
+// DISPONIBILIDAD
+// ===============================
 
 
 function toggleAvailability(){
@@ -123,6 +255,30 @@ return
 
 
 
+if(
+
+user.verified!==true
+
+){
+
+
+alert(
+
+"Tu cuenta todavía no está aprobada"
+
+)
+
+
+return
+
+
+}
+
+
+
+
+
+
 
 const newStatus=!available
 
@@ -134,23 +290,23 @@ setAvailable(newStatus)
 
 
 
+
 updateSupabaseAvailability(
 
-  user.id,
+user.id,
 
-  newStatus
+newStatus
 
 )
-
-
 
 
 
 updateSessionAvailability(
 
-  newStatus
+newStatus
 
 )
+
 
 
 
@@ -165,6 +321,12 @@ updateSessionAvailability(
 
 
 
+
+
+
+// ===============================
+// ACEPTAR PEDIDO
+// ===============================
 
 
 async function takeOrder(id:number){
@@ -193,34 +355,22 @@ alert(
 
 return
 
-
 }
-
-
-
-
 
 
 
 
 await acceptOrder(
 
-
 id,
-
 
 user.id,
 
-
 user.name,
-
 
 user.vehicle
 
-
 )
-
-
 
 
 
@@ -236,33 +386,32 @@ loadOrders()
 
 
 
+
+
+
+
+
+// ===============================
+// CAMBIAR ESTADO
+// ===============================
 
 
 async function changeStatus(
 
-
 id:number,
 
-
 status:OrderStatus
-
 
 ){
 
 
-
 await updateOrderStatus(
-
 
 id,
 
-
 status
 
-
 )
-
-
 
 
 
@@ -280,30 +429,52 @@ loadOrders()
 
 
 
-const visibleOrders = orders.filter(order=>{
-
-
-if(order.status==="Buscando mensajero"){
-
-
-return true
-
-
-}
 
 
 
-if(order.messengerId===user?.id){
+// ===============================
+// PEDIDOS DISPONIBLES
+// ===============================
 
 
-return true
+const availableOrders = orders.filter(order=>{
 
 
-}
+return (
+
+order.status==="Buscando mensajero"
+
+)
+
+
+})
 
 
 
-return false
+
+
+
+
+
+
+
+// ===============================
+// MIS PEDIDOS
+// ===============================
+
+
+const myOrders = orders.filter(order=>{
+
+
+return (
+
+order.messengerId===user?.id &&
+
+order.status!=="Entregado" &&
+
+order.status!=="Cancelado"
+
+)
 
 
 })
@@ -320,193 +491,11 @@ return false
 
 
 
+function OrderCard({order}:{order:Order}){
+
+
+
 return(
-
-
-<>
-
-
-<Navbar />
-
-
-
-<main>
-
-
-<section className="messenger-panel">
-
-
-
-
-
-
-
-<div className="messenger-profile">
-
-
-
-
-
-<div className="profile-icon">
-
-🛵
-
-</div>
-
-
-
-
-
-
-<div className="profile-info">
-
-
-<h1>
-
-Hola {user?.name}
-
-</h1>
-
-
-
-
-
-<p>
-
-Vehículo:
-
-{' '}
-
-{user?.vehicle || "No registrado"}
-
-</p>
-
-
-
-
-
-<p>
-
-⭐ 5.0
-
-</p>
-
-
-
-
-
-<p>
-
-📦 Entregas completadas: 0
-
-</p>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-
-className={
-
-available
-
-?
-
-"status-online"
-
-:
-
-"status-offline"
-
-}
-
-
-
-onClick={toggleAvailability}
-
-
-
->
-
-
-
-{
-
-available
-
-?
-
-"🟢 Disponible"
-
-:
-
-"🔴 Desconectado"
-
-}
-
-
-
-</button>
-
-
-
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<p>
-
-Pedidos disponibles cerca de ti.
-
-</p>
-
-
-
-
-
-
-
-
-
-{
-
-visibleOrders.length===0 ? (
-
-
-<p>
-
-No hay pedidos disponibles.
-
-</p>
-
-
-)
-
-:
-
-visibleOrders.map(order=>(
-
-
 
 
 <div
@@ -537,8 +526,6 @@ Pedido #{order.id}
 
 
 <div className="address-box">
-
-
 
 
 
@@ -638,18 +625,16 @@ onChange={()=>{}}
 
 
 
+
 <p>
 
 📏 Distancia:
 
 {' '}
 
-{order.distance}
-
-km
+{order.distance} km
 
 </p>
-
 
 
 
@@ -663,9 +648,7 @@ km
 
 {' '}
 
-{order.price}
-
-CUP
+{order.price} CUP
 
 </p>
 
@@ -694,13 +677,8 @@ Estado:
 
 
 
-
-
-
-
 {
-
-order.messenger && (
+order.messenger &&
 
 <>
 
@@ -718,7 +696,6 @@ order.messenger && (
 
 
 
-
 <p>
 
 🚗 Vehículo:
@@ -731,23 +708,8 @@ order.messenger && (
 
 
 
-
-
-<p>
-
-⭐ Valoración:
-
-{' '}
-
-{order.messengerRating}
-
-</p>
-
-
 </>
 
-
-)
 
 }
 
@@ -797,11 +759,6 @@ Aceptar pedido
 
 
 
-
-
-
-
-
 {
 
 order.status==="Mensajero asignado"
@@ -837,11 +794,6 @@ Recoger pedido
 )
 
 }
-
-
-
-
-
 
 
 
@@ -896,9 +848,6 @@ Iniciar entrega
 
 
 
-
-
-
 {
 
 order.status==="En camino"
@@ -941,6 +890,43 @@ Finalizar entrega
 
 
 
+</div>
+
+
+)
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+return(
+
+
+<>
+
+
+<Navbar />
+
+
+
+
+
+<main>
+
 
 
 
@@ -948,29 +934,182 @@ Finalizar entrega
 
 {
 
-order.status==="Entregado"
+waitingApproval &&
 
-&&
+<section className="messenger-panel">
 
-order.messengerId===user?.id
 
-&&
+<div className="verification-card">
 
-(
+
+<h1>
+
+⏳ Cuenta pendiente
+
+</h1>
 
 
 <p>
 
-✅ Pedido completado
+Tus datos fueron enviados correctamente.
 
 </p>
 
 
-)
+<p>
+
+Un administrador debe aprobar tu cuenta antes de comenzar a recibir pedidos.
+
+</p>
+
+
+
+</div>
+
+
+</section>
+
 
 }
 
 
+
+
+
+
+
+
+
+{
+
+!waitingApproval &&
+
+
+<section className="messenger-panel">
+
+
+
+
+
+
+
+<div className="messenger-profile">
+
+
+
+
+
+
+<div className="profile-icon">
+
+🛵
+
+</div>
+
+
+
+
+
+
+
+
+<div className="profile-info">
+
+
+<h1>
+
+Hola {user?.name}
+
+</h1>
+
+
+
+
+
+<p>
+
+Vehículo:
+
+{' '}
+
+{user?.vehicle || "No registrado"}
+
+</p>
+
+
+
+
+
+<p>
+
+⭐ 5.0
+
+</p>
+
+
+
+
+
+<p>
+
+📦 Entregas completadas: 0
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<button
+
+
+className={
+
+available
+
+?
+
+"status-online"
+
+:
+
+"status-offline"
+
+}
+
+
+
+onClick={toggleAvailability}
+
+
+
+>
+
+
+{
+
+available
+
+?
+
+"🟢 Disponible"
+
+:
+
+"🔴 Desconectado"
+
+}
+
+
+</button>
 
 
 
@@ -981,8 +1120,52 @@ order.messengerId===user?.id
 
 
 
-))
 
+
+
+
+
+
+<h2>
+
+📦 Pedidos disponibles
+
+</h2>
+
+
+
+
+
+
+
+{
+
+availableOrders.length===0 ?
+
+
+<p>
+
+No hay pedidos disponibles.
+
+</p>
+
+
+:
+
+
+availableOrders.map(order=>(
+
+
+<OrderCard
+
+key={order.id}
+
+order={order}
+
+/>
+
+
+))
 
 
 }
@@ -992,7 +1175,71 @@ order.messengerId===user?.id
 
 
 
+
+
+
+<h2>
+
+🛵 Mis pedidos
+
+</h2>
+
+
+
+
+
+
+
+
+{
+
+myOrders.length===0 ?
+
+
+<p>
+
+No tienes pedidos activos.
+
+</p>
+
+
+:
+
+
+myOrders.map(order=>(
+
+
+<OrderCard
+
+key={order.id}
+
+order={order}
+
+/>
+
+
+))
+
+
+}
+
+
+
+
+
+
+
+
+
 </section>
+
+
+}
+
+
+
+
+
 
 
 </main>
@@ -1005,6 +1252,8 @@ order.messengerId===user?.id
 
 
 }
+
+
 
 
 

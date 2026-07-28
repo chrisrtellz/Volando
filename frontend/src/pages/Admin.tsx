@@ -9,7 +9,8 @@ import {
 import {
   getSupabaseUsers,
   deleteSupabaseUser,
-  toggleSupabaseUserActive
+  toggleSupabaseUserActive,
+  updateMessengerVerification
 } from "../data/supabaseUsers"
 
 import type {
@@ -38,6 +39,10 @@ import {
 
 
 
+
+
+
+
 function Admin(){
 
 
@@ -55,23 +60,21 @@ const [orders,setOrders] = useState<Order[]>([])
 
 
 
+
+
 async function loadUsers(){
 
-try{
 
 const data = await getSupabaseUsers()
 
+
 setUsers(data)
 
-}
-
-catch(error){
-
-console.error(error)
 
 }
 
-}
+
+
 
 
 
@@ -80,21 +83,15 @@ console.error(error)
 
 async function loadOrders(){
 
-try{
 
 const data = await getOrders()
 
+
 setOrders(data)
 
-}
-
-catch(error){
-
-console.error(error)
 
 }
 
-}
 
 
 
@@ -105,11 +102,16 @@ console.error(error)
 
 async function refresh(){
 
+
 await loadUsers()
 
 await loadOrders()
 
+
 }
+
+
+
 
 
 
@@ -125,7 +127,9 @@ refresh()
 
 const timer=setInterval(()=>{
 
+
 refresh()
+
 
 },3000)
 
@@ -143,13 +147,18 @@ return()=>clearInterval(timer)
 
 
 
+
 async function blockUser(id:number){
+
 
 await toggleSupabaseUserActive(id)
 
+
 refresh()
 
+
 }
+
 
 
 
@@ -188,14 +197,31 @@ refresh()
 
 
 
-async function changeOrderStatus(
+
+
+// ===============================
+// VERIFICACION MENSAJERO
+// ===============================
+
+
+async function verifyMessenger(
+
 id:number,
-status:OrderStatus
+
+status:
+"approved"
+|
+"rejected"
+
 ){
 
-await updateOrderStatus(
+
+await updateMessengerVerification(
+
 id,
+
 status
+
 )
 
 
@@ -203,6 +229,40 @@ refresh()
 
 
 }
+
+
+
+
+
+
+
+
+
+
+async function changeOrderStatus(
+
+id:number,
+
+status:OrderStatus
+
+){
+
+
+await updateOrderStatus(
+
+id,
+
+status
+
+)
+
+
+refresh()
+
+
+}
+
+
 
 
 
@@ -240,12 +300,17 @@ refresh()
 
 
 
+
+
+
+
 return(
 
 <>
 
 
 <Navbar />
+
 
 
 
@@ -276,9 +341,9 @@ Centro de control - {admin?.name}
 
 
 
+
+
 <section className="admin-stats">
-
-
 
 
 
@@ -293,6 +358,7 @@ Centro de control - {admin?.name}
 </strong>
 
 </div>
+
 
 
 
@@ -324,14 +390,17 @@ u=>u.role==="mensajero"
 <div className="admin-stat-card">
 
 <h3>
-👤 Clientes
+⏳ Pendientes
 </h3>
 
 <strong>
 
 {
 users.filter(
-u=>u.role==="cliente"
+u=>
+u.role==="mensajero"
+&&
+u.verificationStatus==="pending"
 ).length
 }
 
@@ -351,9 +420,7 @@ u=>u.role==="cliente"
 </h3>
 
 <strong>
-
 {orders.length}
-
 </strong>
 
 </div>
@@ -376,38 +443,42 @@ u=>u.role==="cliente"
 
 
 
+
+
+
+
 <div className="admin-box">
 
 
 <h2>
-👥 Usuarios
+🛵 Usuarios / Mensajeros
 </h2>
+
+
+
 
 
 
 {
 
-users.length===0 ?
-
-<p>
-No hay usuarios.
-</p>
-
-:
-
-
 users.map(user=>(
 
 
+
 <div
+
 className="admin-item"
+
 key={user.id}
+
 >
+
 
 
 <h3>
 {user.name}
 </h3>
+
 
 
 
@@ -418,22 +489,169 @@ key={user.id}
 
 
 <p>
-Rol:
-{user.role}
+Rol: {user.role}
 </p>
+
 
 
 
 
 
 {
-user.role==="mensajero" &&
+
+user.role==="mensajero"
+
+&&
+
+<>
+
+
+<hr/>
+
+
+<h4>
+📋 Ficha del mensajero
+</h4>
+
+
+
 
 <p>
-🛵 {user.vehicle || "Sin vehículo"}
+🛵 Vehículo:
+
+{" "}
+
+{user.vehicle || "No registrado"}
+
 </p>
 
+
+
+
+<p>
+⚡ Multiplicador:
+
+{" "}
+
+{user.vehicleMultiplier || 1}
+
+</p>
+
+
+
+
+<p>
+📱 Teléfono:
+
+{" "}
+
+{user.phone || "No enviado"}
+
+</p>
+
+
+
+
+<p>
+🏠 Dirección:
+
+{" "}
+
+{user.address || "No enviada"}
+
+</p>
+
+
+
+
+<p>
+🪪 Documento:
+
+{" "}
+
+{user.idDocument || "No enviado"}
+
+</p>
+
+
+
+
+<p>
+🚗 Matrícula:
+
+{" "}
+
+{user.vehiclePlate || "No enviada"}
+
+</p>
+
+
+
+
+<p>
+📄 Licencia:
+
+{" "}
+
+{user.licenseNumber || "No enviada"}
+
+</p>
+
+
+
+
+
+<p>
+
+📋 Perfil:
+
+{" "}
+
+{
+
+user.profileComplete
+
+?
+
+"✅ Completo"
+
+:
+
+"❌ Incompleto"
+
 }
+
+
+</p>
+
+
+
+
+
+<p>
+
+🔐 Verificado:
+
+{" "}
+
+{
+
+user.verified
+
+?
+
+"✅ Sí"
+
+:
+
+"❌ No"
+
+}
+
+
+</p>
+
+
 
 
 
@@ -447,7 +665,120 @@ Estado:
 
 {
 
-user.active !== false
+user.verificationStatus==="approved"
+
+?
+
+"✅ Aprobado"
+
+:
+
+user.verificationStatus==="rejected"
+
+?
+
+"❌ Rechazado"
+
+:
+
+"⏳ Pendiente"
+
+}
+
+</p>
+
+
+
+
+
+
+{
+
+
+user.verificationStatus==="pending"
+
+&&
+
+(
+
+
+<div className="admin-actions">
+
+
+<button
+
+className="primary"
+
+disabled={!user.profileComplete}
+
+onClick={()=>verifyMessenger(
+
+user.id,
+
+"approved"
+
+)}
+
+>
+
+✅ Aprobar
+
+</button>
+
+
+
+
+
+<button
+
+className="danger"
+
+onClick={()=>verifyMessenger(
+
+user.id,
+
+"rejected"
+
+)}
+
+>
+
+❌ Rechazar
+
+</button>
+
+
+</div>
+
+
+)
+
+
+}
+
+
+
+
+
+</>
+
+}
+
+
+
+
+
+
+
+<p>
+
+Estado cuenta:
+
+{" "}
+
+{
+
+user.active
 
 ?
 
@@ -474,15 +805,13 @@ user.active !== false
 
 className="primary"
 
-onClick={()=>
-blockUser(user.id)
-}
+onClick={()=>blockUser(user.id)}
 
 >
 
 {
 
-user.active !== false
+user.active
 
 ?
 
@@ -499,13 +828,13 @@ user.active !== false
 
 
 
+
+
 <button
 
 className="danger"
 
-onClick={()=>
-removeUser(user.id)
-}
+onClick={()=>removeUser(user.id)}
 
 >
 
@@ -514,7 +843,9 @@ Eliminar
 </button>
 
 
+
 </div>
+
 
 
 
@@ -525,10 +856,15 @@ Eliminar
 
 ))
 
+
 }
 
 
 </div>
+
+
+
+
 
 
 
@@ -548,17 +884,9 @@ Eliminar
 
 
 
+
+
 {
-
-orders.length===0 ?
-
-<p>
-No hay pedidos.
-</p>
-
-
-:
-
 
 orders.map(order=>(
 
@@ -574,48 +902,51 @@ key={order.id}
 
 
 
-
 <h3>
-
 Pedido #{order.id}
-
 </h3>
 
 
 
+<p>
+👤 Cliente:
+
+{" "}
+
+{order.clientName || "Cliente"}
+
+</p>
+
+
 
 <p>
-👤 {order.clientName || "Cliente"}
+📏 Distancia:
+
+{" "}
+
+{order.distance} km
+
+</p>
+
+
+
+<p>
+💰 Precio:
+
+{" "}
+
+{order.price} CUP
+
 </p>
 
 
 
 
 <p>
-📏 {order.distance} km
-</p>
 
-
-
-
-<p>
-💰 {order.price} CUP
-</p>
-
-
-
-
-
-<p>
 Estado:
-<br/>
-<b>
-{order.status}
-</b>
+
 </p>
-
-
-
 
 
 
@@ -642,26 +973,21 @@ e.target.value as OrderStatus
 Buscando mensajero
 </option>
 
-
 <option>
 Mensajero asignado
 </option>
-
 
 <option>
 Recogiendo pedido
 </option>
 
-
 <option>
 En camino
 </option>
 
-
 <option>
 Entregado
 </option>
-
 
 <option>
 Cancelado
@@ -677,6 +1003,7 @@ Cancelado
 
 
 {
+
 order.messenger &&
 
 <p>
@@ -696,7 +1023,6 @@ order.messenger &&
 
 
 
-
 <div className="admin-actions">
 
 
@@ -704,9 +1030,7 @@ order.messenger &&
 
 className="danger"
 
-onClick={()=>
-cancelOrder(order.id)
-}
+onClick={()=>cancelOrder(order.id)}
 
 >
 
@@ -716,13 +1040,13 @@ Cancelar
 
 
 
+
+
 <button
 
 className="danger"
 
-onClick={()=>
-removeOrder(order.id)
-}
+onClick={()=>removeOrder(order.id)}
 
 >
 
@@ -742,13 +1066,10 @@ Eliminar
 </div>
 
 
-
 ))
 
 
 }
-
-
 
 
 
@@ -766,6 +1087,7 @@ Eliminar
 
 
 
+
 </main>
 
 
@@ -776,6 +1098,7 @@ Eliminar
 
 
 }
+
 
 
 export default Admin
