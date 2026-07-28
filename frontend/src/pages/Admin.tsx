@@ -20,12 +20,16 @@ import type {
 
 
 import {
-  getOrders
+  getOrders,
+  updateOrderStatus,
+  cancelOrder,
+  deleteOrder
 } from "../data/orders"
 
 
 import type {
-  Order
+  Order,
+  OrderStatus
 } from "../data/orders"
 
 
@@ -39,21 +43,14 @@ import {
 
 
 
-
-
-
 function Admin(){
-
 
 
 const admin = getCurrentUser()
 
 
 
-
-
 const [users,setUsers] = useState<SupabaseUser[]>([])
-
 
 
 const [orders,setOrders] = useState<Order[]>([])
@@ -63,23 +60,13 @@ const [orders,setOrders] = useState<Order[]>([])
 
 
 
-
-
-
 async function loadUsers(){
-
-
 
  const data = await getSupabaseUsers()
 
-
  setUsers(data)
 
-
-
 }
-
-
 
 
 
@@ -89,17 +76,11 @@ async function loadUsers(){
 
 async function loadOrders(){
 
-
  const data = await getOrders()
-
 
  setOrders(data)
 
-
-
 }
-
-
 
 
 
@@ -109,13 +90,9 @@ async function loadOrders(){
 
 async function refresh(){
 
-
  await loadUsers()
 
-
  await loadOrders()
-
-
 
 }
 
@@ -125,35 +102,20 @@ async function refresh(){
 
 
 
-
-
 useEffect(()=>{
-
-
 
 refresh()
 
 
-
-
-
-
 const timer = setInterval(()=>{
 
-
  refresh()
-
 
 },3000)
 
 
 
-
-
-
-
 return ()=>clearInterval(timer)
-
 
 
 },[])
@@ -166,25 +128,12 @@ return ()=>clearInterval(timer)
 
 
 
-
-
-
-
-
 async function removeUser(id:number){
 
 
-
 const confirmDelete = window.confirm(
-
 "¿Eliminar usuario?"
-
 )
-
-
-
-
-
 
 
 if(!confirmDelete){
@@ -195,27 +144,13 @@ return
 
 
 
-
-
-
-
 await deleteSupabaseUser(id)
-
-
-
 
 
 refresh()
 
 
-
 }
-
-
-
-
-
-
 
 
 
@@ -228,13 +163,9 @@ refresh()
 async function blockUser(id:number){
 
 
-
 await toggleSupabaseUserActive(id)
 
-
-
 refresh()
-
 
 
 }
@@ -246,6 +177,49 @@ refresh()
 
 
 
+async function changeOrderStatus(
+id:number,
+status:OrderStatus
+){
+
+await updateOrderStatus(
+id,
+status
+)
+
+refresh()
+
+}
+
+
+
+
+
+
+
+
+async function removeOrder(id:number){
+
+
+const confirmDelete = window.confirm(
+"¿Eliminar pedido?"
+)
+
+
+if(!confirmDelete){
+
+return
+
+}
+
+
+await deleteOrder(id)
+
+
+refresh()
+
+
+}
 
 
 
@@ -264,37 +238,22 @@ return(
 
 
 
-
-
 <main className="admin-page">
 
 
 
 
 
-
-
 <h1>
-
 Panel Administrador
-
 </h1>
 
 
 
 
-
-
-
 <p>
-
 Bienvenido {admin?.name}
-
 </p>
-
-
-
-
 
 
 
@@ -308,26 +267,15 @@ Bienvenido {admin?.name}
 
 
 
-
-
-
-
 <div className="card">
 
-
 <h2>
-
 Usuarios
-
 </h2>
 
-
 <p>
-
 {users.length}
-
 </p>
-
 
 </div>
 
@@ -335,40 +283,21 @@ Usuarios
 
 
 
-
-
-
-
 <div className="card">
 
-
 <h2>
-
 Mensajeros
-
 </h2>
-
 
 <p>
 
-
-
 {
-
 users.filter(
-
 u=>u.role==="mensajero"
-
 ).length
-
-
-
 }
 
-
-
 </p>
-
 
 </div>
 
@@ -376,46 +305,23 @@ u=>u.role==="mensajero"
 
 
 
-
-
-
-
 <div className="card">
 
-
 <h2>
-
 Clientes
-
 </h2>
 
-
 <p>
-
-
 
 {
-
 users.filter(
-
 u=>u.role==="cliente"
-
 ).length
-
-
-
 }
-
-
 
 </p>
 
-
 </div>
-
-
-
-
 
 
 
@@ -423,24 +329,15 @@ u=>u.role==="cliente"
 
 <div className="card">
 
-
 <h2>
-
 Pedidos
-
 </h2>
 
-
 <p>
-
 {orders.length}
-
 </p>
 
-
 </div>
-
-
 
 
 
@@ -455,14 +352,8 @@ Pedidos
 
 
 <h2>
-
 👥 Usuarios registrados
-
 </h2>
-
-
-
-
 
 
 
@@ -472,22 +363,15 @@ Pedidos
 
 users.length===0 ? (
 
-
 <p>
-
 No hay usuarios registrados.
-
 </p>
-
 
 )
 
 :
 
 users.map(user=>(
-
-
-
 
 
 <div
@@ -500,52 +384,23 @@ key={user.id}
 
 
 
-
-
-
-
-
 <h3>
-
 {user.name}
-
 </h3>
 
 
 
 
-
-
-
-
-
 <p>
-
 📧 {user.email}
-
 </p>
-
-
-
-
-
 
 
 
 
 <p>
-
-Rol:
-
-{" "}
-
-{user.role}
-
+Rol: {user.role}
 </p>
-
-
-
-
 
 
 
@@ -555,22 +410,13 @@ Rol:
 
 user.role==="mensajero" && (
 
-
 <p>
-
 🛵 {user.vehicle}
-
 </p>
-
 
 )
 
 }
-
-
-
-
-
 
 
 
@@ -601,10 +447,6 @@ user.active !== false
 
 
 
-
-
-
-
 <button
 
 className="primary"
@@ -627,13 +469,7 @@ user.active !== false
 
 }
 
-
-
 </button>
-
-
-
-
 
 
 
@@ -654,15 +490,7 @@ Eliminar
 
 
 
-
-
-
-
-
 </div>
-
-
-
 
 
 ))
@@ -677,17 +505,9 @@ Eliminar
 
 
 
-
-
-
-
 <h2>
-
 📦 Pedidos actuales
-
 </h2>
-
-
 
 
 
@@ -699,21 +519,15 @@ Eliminar
 
 orders.length===0 ? (
 
-
 <p>
-
 No hay pedidos.
-
 </p>
-
 
 )
 
 :
 
 orders.map(order=>(
-
-
 
 
 
@@ -727,96 +541,88 @@ key={order.id}
 
 
 
-
-
-
-
 <h3>
-
 Pedido #{order.id}
-
 </h3>
 
 
 
 
-
+<p>
+👤 Cliente: {order.clientName || "Sin datos"}
+</p>
 
 
 
 
 <p>
+📏 Distancia: {order.distance} km
+</p>
 
-👤 Cliente:
 
-{" "}
 
-{order.clientName || "Sin datos"}
 
+<p>
+💰 Precio: {order.price} CUP
 </p>
 
 
 
 
 
-
-
-
-
 <p>
-
-📏 Distancia:
-
-{" "}
-
-{order.distance}
-
-km
-
+Estado: {order.status}
 </p>
 
 
 
 
 
+<select
+
+value={order.status}
+
+onChange={(e)=>
+changeOrderStatus(
+order.id,
+e.target.value as OrderStatus
+)
+}
+
+>
 
 
+<option>
+Buscando mensajero
+</option>
 
 
-<p>
-
-💰 Precio:
-
-{" "}
-
-{order.price}
-
-CUP
-
-</p>
+<option>
+Mensajero asignado
+</option>
 
 
+<option>
+Recogiendo pedido
+</option>
 
 
+<option>
+En camino
+</option>
 
 
+<option>
+Entregado
+</option>
 
 
-
-<p>
-
-Estado:
-
-{" "}
-
-{order.status}
-
-</p>
+<option>
+Cancelado
+</option>
 
 
-
-
-
+</select>
 
 
 
@@ -828,55 +634,24 @@ Estado:
 
 order.messenger && (
 
-
 <>
 
-
 <p>
-
-🛵 Mensajero:
-
-{" "}
-
-{order.messenger}
-
+🛵 Mensajero: {order.messenger}
 </p>
 
 
-
-
-
-
-
 <p>
-
-🚗 Vehículo:
-
-{" "}
-
-{order.messengerVehicle}
-
+🚗 Vehículo: {order.messengerVehicle}
 </p>
 
 
-
-
-
-
-
 <p>
-
-⭐ Valoración:
-
-{" "}
-
-{order.messengerRating}
-
+⭐ Valoración: {order.messengerRating}
 </p>
 
 
 </>
-
 
 )
 
@@ -884,6 +659,36 @@ order.messenger && (
 
 
 
+
+
+
+<button
+
+className="danger"
+
+onClick={()=>cancelOrder(order.id)}
+
+>
+
+Cancelar pedido
+
+</button>
+
+
+
+
+
+<button
+
+className="danger"
+
+onClick={()=>removeOrder(order.id)}
+
+>
+
+Eliminar
+
+</button>
 
 
 
@@ -903,8 +708,6 @@ order.messenger && (
 
 
 </main>
-
-
 
 
 

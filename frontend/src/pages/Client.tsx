@@ -49,9 +49,7 @@ import {
 
 
 
-
 function Client(){
-
 
 
 const user = getCurrentUser()
@@ -63,7 +61,6 @@ const user = getCurrentUser()
 const [users,setUsers] = useState<SupabaseUser[]>([])
 
 
-
 const [distance,setDistance] = useState(0)
 
 
@@ -73,24 +70,25 @@ const [price,setPrice] = useState(0)
 const [searching,setSearching] = useState(false)
 
 
-
 const [orderId,setOrderId] = useState<number|null>(null)
-
 
 
 const [currentOrder,setCurrentOrder] = useState<any>(null)
 
 
-
 const [points,setPoints] = useState<any[]>([])
-
 
 
 const [routePoints,setRoutePoints] = useState<any[]>([])
 
 
-
 const [addresses,setAddresses] = useState<string[]>([])
+
+
+
+// PANEL MAPA
+
+const [showPanel,setShowPanel] = useState(true)
 
 
 
@@ -127,8 +125,6 @@ async function loadUsers(){
 
 
 
-
-
 const messengerUser =
 
 currentOrder?.messenger
@@ -153,23 +149,14 @@ null
 
 
 
-
-
-
-
-
-
 useEffect(()=>{
 
 
 async function loadOrder(){
 
 
-
 const saved = localStorage.getItem(
-
 "clientOrder"
-
 )
 
 
@@ -177,21 +164,15 @@ const saved = localStorage.getItem(
 if(saved){
 
 
-
 const id = Number(saved)
-
 
 
 const orders = await getOrders()
 
 
-
 const order = orders.find(
-
 o=>o.id===id
-
 )
-
 
 
 
@@ -200,9 +181,7 @@ if(!order){
 
 
 localStorage.removeItem(
-
 "clientOrder"
-
 )
 
 
@@ -220,9 +199,7 @@ return
 
 
 
-
 if(order.status !== "Entregado"){
-
 
 
 setOrderId(id)
@@ -232,21 +209,17 @@ setCurrentOrder(order)
 setSearching(true)
 
 
-
 }
 
 else{
 
 
 localStorage.removeItem(
-
 "clientOrder"
-
 )
 
 
 }
-
 
 
 }
@@ -262,7 +235,6 @@ loadUsers()
 loadOrder()
 
 
-
 },[])
 
 
@@ -273,22 +245,12 @@ loadOrder()
 
 
 
-
-
-
-// CALCULAR RUTA
-
-
 async function calculateRoute(
-
 newPoints:any[]
-
 ){
 
 
-
 if(newPoints.length===2){
-
 
 
 const route = await getRoute(
@@ -301,49 +263,33 @@ newPoints[1]
 
 
 
-
-
 if(route){
 
 
-
 setDistance(
-
 route.distance
-
 )
 
 
 
 setPrice(
-
 calculatePrice(route.distance)
-
 )
 
 
 
 setRoutePoints(
-
 route.coordinates
-
 )
 
 
-
 }
-
-
-
-}
-
 
 
 }
 
 
-
-
+}
 
 
 
@@ -354,15 +300,11 @@ route.coordinates
 
 
 async function handleMapChange(
-
 newPoints:any[]
-
 ){
 
 
-
 setPoints(newPoints)
-
 
 
 await calculateRoute(newPoints)
@@ -371,14 +313,10 @@ await calculateRoute(newPoints)
 
 
 
-
-
 const names = await Promise.all(
 
 
-
 newPoints.map(point=>
-
 
 
 getAddress(
@@ -390,9 +328,7 @@ point.lng
 )
 
 
-
 )
-
 
 
 )
@@ -403,13 +339,16 @@ setAddresses(names)
 
 
 
+// abre panel al seleccionar puntos
+
+if(newPoints.length===2){
+
+setShowPanel(true)
+
 }
 
 
-
-
-
-
+}
 
 
 
@@ -422,7 +361,6 @@ setAddresses(names)
 async function sendOrder(){
 
 
-
 if(
 
 distance===0 ||
@@ -433,9 +371,7 @@ points.length!==2
 
 
 alert(
-
 "Selecciona dos puntos en el mapa"
-
 )
 
 
@@ -449,13 +385,12 @@ return
 
 
 
+
 if(!user){
 
 
 alert(
-
 "Debes iniciar sesión"
-
 )
 
 
@@ -471,7 +406,6 @@ return
 
 
 const id = Date.now()
-
 
 
 
@@ -536,14 +470,10 @@ status:
 
 
 
-
-
 setCurrentOrder(null)
 
 
-
 setOrderId(id)
-
 
 
 localStorage.setItem(
@@ -559,11 +489,7 @@ id.toString()
 setSearching(true)
 
 
-
 }
-
-
-
 
 
 
@@ -579,21 +505,16 @@ setSearching(true)
 useEffect(()=>{
 
 
-
 const timer=setInterval(async()=>{
-
 
 
 try{
 
 
-
 if(orderId){
 
 
-
 const orders = await getOrders()
-
 
 
 const order = orders.find(
@@ -605,14 +526,11 @@ o=>o.id===orderId
 
 
 
-
 if(!order){
 
 
 localStorage.removeItem(
-
 "clientOrder"
-
 )
 
 
@@ -626,7 +544,6 @@ setSearching(false)
 return
 
 }
-
 
 
 
@@ -648,20 +565,15 @@ setSearching(false)
 
 
 
-
 if(order.status==="Entregado"){
 
 
 localStorage.removeItem(
-
 "clientOrder"
-
 )
 
 
 }
-
-
 
 
 
@@ -707,10 +619,6 @@ return()=>clearInterval(timer)
 
 
 
-
-
-
-
 return(
 
 <>
@@ -726,7 +634,48 @@ return(
 
 
 
-<section className="client-form">
+
+<section className="client-map">
+
+
+<RealMap
+
+points={points}
+
+route={routePoints}
+
+onChange={handleMapChange}
+
+/>
+
+
+</section>
+
+
+
+
+
+
+
+
+
+<section
+
+className={
+
+showPanel
+
+?
+
+"client-form"
+
+:
+
+"client-form hidden"
+
+}
+
+>
 
 
 
@@ -1081,43 +1030,39 @@ Solicitar mensajero
 
 
 
-</section>
-
-
-
-
-
-
-
-
-
-<section className="client-map">
-
-
-
-<h3>
-
-Mapa de La Habana
-
-</h3>
-
-
-
-
-
-<RealMap
-
-points={points}
-
-route={routePoints}
-
-onChange={handleMapChange}
-
-/>
-
-
 
 </section>
+
+
+
+
+
+
+
+<button
+
+className="map-toggle"
+
+onClick={()=>setShowPanel(!showPanel)}
+
+>
+
+{
+
+showPanel
+
+?
+
+"⌄"
+
+:
+
+"⌃"
+
+}
+
+</button>
+
 
 
 
@@ -1126,7 +1071,6 @@ onChange={handleMapChange}
 
 
 </main>
-
 
 
 </>

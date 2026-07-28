@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom"
 import { getCurrentUser, logout } from "../data/auth"
 import { useState } from "react"
+import logo from "../assets/logo.png"
 
 function Navbar() {
 
   const navigate = useNavigate()
 
-  const [user, setUser] = useState(getCurrentUser())
+  const [user, setUser] = useState(
+    getCurrentUser()
+  )
 
   function handleLogout() {
 
@@ -56,27 +59,32 @@ function Navbar() {
 
         <div className="logo-icon">
 
-          🪽
+          <img
+            src={logo}
+            alt="Volando"
+          />
 
         </div>
 
         <div className="logo-text">
 
-          <h2>VOLANDO</h2>
+          <h2>
 
-          <span>Plataforma de mensajería</span>
+            VOLANDO
 
-        </div>
+          </h2>
 
-        <div className="logo-home">
+          <span>
 
-          🏠 Volver al inicio
+            Plataforma de mensajería
+
+          </span>
 
         </div>
 
       </div>
 
-      {/* BOTONES */}
+      {/* NAVEGACIÓN */}
 
       <div className="nav-buttons">
 

@@ -2,6 +2,7 @@ import Navbar from '../components/Navbar'
 import Hero from '../components/Hero'
 import HowItWorks from '../components/HowItWorks'
 import WhyVolando from '../components/WhyVolando'
+import logo from "../assets/logo.png"
 
 
 function Home() {
@@ -37,9 +38,20 @@ function Home() {
             <div className="footer-brand">
 
 
-              <h2>
-                🚀 Volando
-              </h2>
+              <div className="footer-logo">
+
+                <img
+                  src={logo}
+                  alt="Volando"
+                />
+
+
+                <h2>
+                  Volando
+                </h2>
+
+              </div>
+
 
 
               <p>

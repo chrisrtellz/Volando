@@ -4,8 +4,13 @@ import {
   Marker,
   Popup,
   Polyline,
-  useMapEvents
+  useMapEvents,
+  useMap
 } from "react-leaflet"
+
+import {
+  useEffect
+} from "react"
 
 import "leaflet/dist/leaflet.css"
 
@@ -113,7 +118,6 @@ const messengerIcon = L.divIcon({
 
 
 
-
 type Point = {
 
   lat:number
@@ -121,6 +125,7 @@ type Point = {
   lng:number
 
 }
+
 
 
 
@@ -145,6 +150,49 @@ type Props = {
 
 
 }
+
+
+
+
+
+
+
+
+
+// =========================
+// ACTUALIZAR TAMAÑO MAPA
+// =========================
+
+function ResizeMap(){
+
+
+const map = useMap()
+
+
+
+useEffect(()=>{
+
+
+setTimeout(()=>{
+
+
+map.invalidateSize()
+
+
+},200)
+
+
+
+},[map])
+
+
+
+return null
+
+
+}
+
+
 
 
 
@@ -193,6 +241,8 @@ newPoints=[]
 
 
 
+
+
 newPoints.push({
 
 lat:e.latlng.lat,
@@ -200,6 +250,8 @@ lat:e.latlng.lat,
 lng:e.latlng.lng
 
 })
+
+
 
 
 
@@ -259,6 +311,8 @@ onChange
 
 
 
+
+
 const havana:[number,number]=[
 
 23.1136,
@@ -285,6 +339,8 @@ point.lat,
 point.lng
 
 ])
+
+
 
 
 
@@ -363,17 +419,24 @@ zoom={13}
 
 style={{
 
-height:"550px",
 
-width:"100%",
+height:"100%",
 
-borderRadius:"15px"
+
+width:"100%"
+
 
 }}
 
 
 
 >
+
+
+
+
+
+<ResizeMap />
 
 
 
@@ -664,6 +727,9 @@ icon={messengerIcon}
 )
 
 }
+
+
+
 
 
 
