@@ -1,3 +1,5 @@
+
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -2492,7 +2494,52 @@ font-size:30px;
 }
 
 /* ==========================
-   CLIENT PAGE - FULL MAP
+   CLIENT PAGE - FULL MAP FIX
+========================== */
+
+
+/* Evita romper navbar y scroll */
+html,
+body,
+#root{
+
+    width:100%;
+
+    min-height:100%;
+
+    margin:0;
+
+}
+
+
+/* ==========================
+   NAVBAR
+========================== */
+
+.navbar{
+
+    position:relative;
+
+    z-index:1000;
+
+    background:var(--navy-black);
+
+    padding:20px 60px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+
+/* ==========================
+   CLIENTE MAPA
 ========================== */
 
 
@@ -2502,7 +2549,7 @@ font-size:30px;
 
     width:100%;
 
-    height:calc(100vh - 70px);
+    height:calc(100vh - 90px);
 
     overflow:hidden;
 
@@ -2511,10 +2558,6 @@ font-size:30px;
 }
 
 
-
-/* ==========================
-   MAPA COMPLETO
-========================== */
 
 
 .client-map{
@@ -2539,32 +2582,39 @@ font-size:30px;
 
     height:100%;
 
-    z-index:1;
+    border-radius:0;
 
 }
 
 
 
 /* ==========================
-   PANEL INFERIOR CLIENTE
+ PANEL CLIENTE
 ========================== */
 
 
 .client-form{
 
+
     position:absolute;
+
+
+    left:50%;
+
 
     bottom:20px;
 
-    left:50%;
 
 
     transform:translateX(-50%);
 
 
+
     width:90%;
 
+
     max-width:430px;
+
 
 
     max-height:70vh;
@@ -2578,27 +2628,21 @@ font-size:30px;
 
 
 
-    background:
-
-    rgba(2,6,23,0.94);
-
+    background:rgba(2,6,23,.94);
 
 
     backdrop-filter:blur(12px);
 
 
 
-    border:
-
-    1px solid #1e293b;
-
+    border:1px solid #1e293b;
 
 
     border-radius:24px;
 
 
 
-    z-index:10;
+    z-index:20;
 
 
 
@@ -2611,48 +2655,39 @@ font-size:30px;
 
 
 
-/* Scroll bonito en panel */
-
-.client-form::-webkit-scrollbar{
-
-    width:5px;
-
-}
+.client-form.hidden{
 
 
-.client-form::-webkit-scrollbar-thumb{
+    transform:
 
-    background:#2563eb;
+    translate(-50%,120%);
 
-    border-radius:10px;
 
 }
 
 
 
-
-
-/* ==========================
-   TITULOS
-========================== */
 
 
 .client-form h1{
 
+
     margin:0;
 
-    color:#f8fafc;
+    color:white;
 
     font-size:22px;
+
 
 }
 
 
+
 .client-form h2{
 
-    color:#f8fafc;
 
-    margin-top:10px;
+    color:white;
+
 
 }
 
@@ -2661,18 +2696,17 @@ font-size:30px;
 
 
 /* ==========================
-   DIRECCIONES
+ DIRECCIONES
 ========================== */
 
 
 .address-box{
 
+
     background:#111827;
 
 
-    border:
-
-    1px solid #1e293b;
+    border:1px solid #1e293b;
 
 
     border-radius:15px;
@@ -2690,9 +2724,11 @@ font-size:30px;
 
 .address-box p{
 
+
     color:#cbd5e1;
 
     font-size:14px;
+
 
 }
 
@@ -2701,11 +2737,12 @@ font-size:30px;
 
 
 /* ==========================
-   PRECIO
+ PRECIO
 ========================== */
 
 
 .price-box{
+
 
     background:#0f172a;
 
@@ -2722,18 +2759,20 @@ font-size:30px;
 }
 
 
-
 .price-box h3{
 
+
     color:#38bdf8;
+
 
 }
 
 
-
 .price-box p{
 
-    color:#f8fafc;
+
+    color:white;
+
 
 }
 
@@ -2742,7 +2781,7 @@ font-size:30px;
 
 
 /* ==========================
-   ESTADOS DEL PEDIDO
+ ESTADOS
 ========================== */
 
 
@@ -2753,9 +2792,7 @@ font-size:30px;
     background:#111827;
 
 
-    border:
-
-    1px solid #2563eb;
+    border:1px solid #2563eb;
 
 
     border-radius:15px;
@@ -2774,7 +2811,9 @@ font-size:30px;
 .searching-box h2,
 .messenger-found h2{
 
+
     color:#38bdf8;
+
 
 }
 
@@ -2783,11 +2822,70 @@ font-size:30px;
 
 
 /* ==========================
-   BOTON
+ BOTON MAPA
 ========================== */
 
 
-.client-form button{
+.map-toggle{
+
+
+    position:absolute;
+
+
+    right:20px;
+
+
+    bottom:20px;
+
+
+    z-index:30;
+
+
+
+    width:55px;
+
+
+    height:55px;
+
+
+
+    padding:0;
+
+
+    margin:0;
+
+
+
+    border-radius:50%;
+
+
+
+    background:#2563eb;
+
+
+    color:white;
+
+
+    display:flex;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+}
+
+
+
+
+/* ==========================
+ BOTON PRINCIPAL CLIENTE
+========================== */
+
+
+.client-form .primary{
 
 
     width:100%;
@@ -2799,31 +2897,13 @@ font-size:30px;
     padding:15px;
 
 
-
-    border:none;
-
-
-    border-radius:15px;
-
-
-
-    font-size:16px;
-
-
-    cursor:pointer;
-
-
-}
-
-
-
-.client-form .primary{
-
-
     background:#2563eb;
 
 
     color:white;
+
+
+    border-radius:15px;
 
 
 }
@@ -2842,19 +2922,54 @@ font-size:30px;
 
 
 
+/* ==========================
+ SCROLL PANEL
+========================== */
+
+
+.client-form::-webkit-scrollbar{
+
+    width:5px;
+
+}
+
+
+
+.client-form::-webkit-scrollbar-thumb{
+
+    background:#2563eb;
+
+    border-radius:10px;
+
+}
+
+
+
 
 
 /* ==========================
-   MOVIL ANDROID
+ MOBILE
 ========================== */
 
 
 @media(max-width:768px){
 
 
+.navbar{
+
+
+    padding:20px;
+
+
+}
+
+
+
 .client-page{
 
-    height:calc(100vh - 60px);
+
+    height:calc(100vh - 75px);
+
 
 }
 
@@ -2863,32 +2978,177 @@ font-size:30px;
 .client-form{
 
 
-    bottom:10px;
-
-
     width:94%;
+
+
+    bottom:10px;
 
 
     max-height:65vh;
 
 
-    padding:18px;
-
-
-    border-radius:20px;
-
-
-}
-
-
-
-.client-form h1{
-
-    font-size:20px;
-
 }
 
 
 
 }
 
+/* FIX CLIENT FULL SCREEN */
+
+.client-page {
+
+    position:relative !important;
+
+    width:100vw !important;
+
+    height:calc(100vh - 90px) !important;
+
+    margin:0 !important;
+
+    padding:0 !important;
+
+    left:0 !important;
+
+    top:0 !important;
+
+    overflow:hidden !important;
+
+}
+
+
+.client-map {
+
+    position:absolute !important;
+
+    top:0 !important;
+
+    left:0 !important;
+
+    width:100% !important;
+
+    height:100% !important;
+
+    margin:0 !important;
+
+    padding:0 !important;
+
+}
+
+/* ==========================
+   FIX CLIENT SCROLL
+========================== */
+
+
+html,
+body,
+#root {
+
+    width:100%;
+
+    min-height:100%;
+
+    margin:0;
+
+}
+
+#root{
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+
+.client-page{
+
+    flex:1;
+
+    width:100%;
+
+    height:calc(100vh - 80px);
+
+    position:relative;
+
+    overflow:hidden;
+
+    margin:0;
+
+    padding:0;
+
+}
+
+
+.client-map{
+
+    position:absolute;
+
+    inset:0;
+
+    width:100%;
+
+    height:100%;
+
+    padding:0;
+
+    margin:0;
+
+}
+
+
+
+.client-map .leaflet-container{
+
+    width:100%;
+
+    height:100%;
+
+}
+
+
+/* quitar cualquier espacio raro del panel */
+
+.client-form{
+
+    margin:0;
+
+}
+
+
+/* quitar espacio del navbar abajo */
+
+.navbar{
+
+    flex-shrink:0;
+
+}
+
+/* ==========================
+   PANEL CLIENTE OCULTAR/MOSTRAR
+========================== */
+
+
+.client-form{
+
+    transition: transform .35s ease, opacity .35s ease;
+
+}
+
+
+.client-form.open{
+
+    transform:translateX(-50%) translateY(0);
+
+    opacity:1;
+
+}
+
+
+.client-form:not(.open){
+
+    transform:translateX(-50%) translateY(120%);
+
+    opacity:0;
+
+    pointer-events:none;
+
+}

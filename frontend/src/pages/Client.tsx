@@ -6,44 +6,35 @@ import {
   useEffect
 } from 'react'
 
-
 import {
   calculatePrice
 } from '../utils/pricing'
 
-
 import {
   createOrder,
-  getOrders
+  getOrders,
+  cancelOrder
 } from '../data/orders'
-
 
 import {
   getCurrentUser
 } from "../data/auth"
 
-
 import {
   getSupabaseUsers
 } from "../data/supabaseUsers"
-
 
 import type {
   SupabaseUser
 } from "../data/supabaseUsers"
 
-
-
 import {
   getRoute
 } from "../utils/routing"
 
-
 import {
   getAddress
 } from "../utils/geocoding"
-
-
 
 
 
@@ -56,37 +47,25 @@ const user = getCurrentUser()
 
 
 
-
-
 const [users,setUsers] = useState<SupabaseUser[]>([])
-
 
 const [distance,setDistance] = useState(0)
 
-
 const [price,setPrice] = useState(0)
-
 
 const [searching,setSearching] = useState(false)
 
-
 const [orderId,setOrderId] = useState<number|null>(null)
-
 
 const [currentOrder,setCurrentOrder] = useState<any>(null)
 
-
 const [points,setPoints] = useState<any[]>([])
 
-
 const [routePoints,setRoutePoints] = useState<any[]>([])
-
 
 const [addresses,setAddresses] = useState<string[]>([])
 
 
-
-// PANEL MAPA
 
 const [showPanel,setShowPanel] = useState(true)
 
@@ -96,26 +75,21 @@ const [showPanel,setShowPanel] = useState(true)
 
 
 
-
-
 async function loadUsers(){
 
-  try{
+try{
 
-    const data = await getSupabaseUsers()
+const data = await getSupabaseUsers()
 
-    setUsers(data)
+setUsers(data)
 
-  }
+}
 
-  catch(error){
+catch(error){
 
-    console.error(
-      "Error cargando usuarios",
-      error
-    )
+console.error(error)
 
-  }
+}
 
 }
 
@@ -147,8 +121,6 @@ null
 
 
 
-
-
 useEffect(()=>{
 
 
@@ -158,7 +130,6 @@ async function loadOrder(){
 const saved = localStorage.getItem(
 "clientOrder"
 )
-
 
 
 if(saved){
@@ -176,51 +147,19 @@ o=>o.id===id
 
 
 
-
-if(!order){
-
-
-localStorage.removeItem(
-"clientOrder"
-)
-
-
-setOrderId(null)
-
-setCurrentOrder(null)
-
-setSearching(false)
-
-
-return
-
-}
-
-
-
-
-if(order.status !== "Entregado"){
+if(order){
 
 
 setOrderId(id)
 
 setCurrentOrder(order)
 
-setSearching(true)
-
-
-}
-
-else{
-
-
-localStorage.removeItem(
-"clientOrder"
+setSearching(
+order.status==="Buscando mensajero"
 )
 
 
 }
-
 
 }
 
@@ -266,16 +205,12 @@ newPoints[1]
 if(route){
 
 
-setDistance(
-route.distance
-)
-
+setDistance(route.distance)
 
 
 setPrice(
 calculatePrice(route.distance)
 )
-
 
 
 setRoutePoints(
@@ -289,7 +224,9 @@ route.coordinates
 }
 
 
+
 }
+
 
 
 
@@ -311,35 +248,23 @@ await calculateRoute(newPoints)
 
 
 
-
-
 const names = await Promise.all(
-
 
 newPoints.map(point=>
 
-
 getAddress(
-
 point.lat,
-
 point.lng
+)
 
 )
 
-
 )
-
-
-)
-
 
 
 setAddresses(names)
 
 
-
-// abre panel al seleccionar puntos
 
 if(newPoints.length===2){
 
@@ -362,46 +287,29 @@ async function sendOrder(){
 
 
 if(
-
 distance===0 ||
-
 points.length!==2
-
 ){
-
 
 alert(
 "Selecciona dos puntos en el mapa"
 )
 
-
 return
 
-
 }
-
-
-
-
 
 
 
 if(!user){
 
-
 alert(
 "Debes iniciar sesión"
 )
 
-
 return
 
-
 }
-
-
-
-
 
 
 
@@ -409,90 +317,111 @@ const id = Date.now()
 
 
 
-
-
-
 await createOrder({
-
 
 
 id,
 
 
-
 clientId:user.id,
-
 
 
 clientName:user.name,
 
 
-
 pickup:points[0],
-
 
 
 destination:points[1],
 
 
-
 pickupAddress:addresses[0],
-
 
 
 destinationAddress:addresses[1],
 
 
-
 distance,
-
 
 
 price,
 
 
-
 route:routePoints,
 
 
-
-status:
-
-"Buscando mensajero"
-
+status:"Buscando mensajero"
 
 
 })
 
 
 
-
-
-
+setOrderId(id)
 
 setCurrentOrder(null)
 
-
-setOrderId(id)
+setSearching(true)
 
 
 localStorage.setItem(
-
 "clientOrder",
-
 id.toString()
-
 )
 
-
-
-setSearching(true)
 
 
 }
 
 
 
+
+
+
+
+
+
+async function cancelCurrentOrder(){
+
+
+if(!orderId){
+
+return
+
+}
+
+
+
+const ok = window.confirm(
+"¿Cancelar este pedido?"
+)
+
+
+if(!ok){
+
+return
+
+}
+
+
+
+await cancelOrder(orderId)
+
+
+
+localStorage.removeItem(
+"clientOrder"
+)
+
+
+setOrderId(null)
+
+setCurrentOrder(null)
+
+setSearching(false)
+
+
+}
 
 
 
@@ -508,9 +437,6 @@ useEffect(()=>{
 const timer=setInterval(async()=>{
 
 
-try{
-
-
 if(orderId){
 
 
@@ -518,65 +444,28 @@ const orders = await getOrders()
 
 
 const order = orders.find(
-
 o=>o.id===orderId
-
 )
 
 
 
-
-if(!order){
-
-
-localStorage.removeItem(
-"clientOrder"
-)
-
-
-setOrderId(null)
-
-setCurrentOrder(null)
-
-setSearching(false)
-
-
-return
-
-}
-
-
+if(order){
 
 
 setCurrentOrder(order)
 
 
 
-
-
-if(order.status !== "Buscando mensajero"){
-
+if(
+order.status!=="Buscando mensajero"
+){
 
 setSearching(false)
 
-
 }
 
 
-
-
-if(order.status==="Entregado"){
-
-
-localStorage.removeItem(
-"clientOrder"
-)
-
-
 }
-
-
-
 
 
 }
@@ -587,29 +476,14 @@ await loadUsers()
 
 
 
-}
-
-catch(error){
-
-console.error(error)
-
-}
-
-
-
 },3000)
-
-
 
 
 
 return()=>clearInterval(timer)
 
 
-
 },[orderId])
-
-
 
 
 
@@ -632,19 +506,25 @@ return(
 
 
 
-
-
-
 <section className="client-map">
 
 
 <RealMap
 
+
 points={points}
+
 
 route={routePoints}
 
+
+messengerLocation={
+currentOrder?.messengerLocation
+}
+
+
 onChange={handleMapChange}
+
 
 />
 
@@ -667,16 +547,21 @@ showPanel
 
 ?
 
-"client-form"
+"client-form open"
 
 :
 
-"client-form hidden"
+"client-form"
 
 }
 
 >
 
+
+
+<div className="panel-handle">
+
+</div>
 
 
 
@@ -686,8 +571,6 @@ showPanel
 Hola {user?.name} 👋
 
 </h1>
-
-
 
 
 
@@ -701,15 +584,10 @@ Solicitar envío
 
 
 
-
-
-
-
 <div className="address-box">
 
 
 {
-
 addresses[0] &&
 
 <p>
@@ -726,10 +604,7 @@ addresses[0] &&
 
 
 
-
-
 {
-
 addresses[1] &&
 
 <p>
@@ -754,8 +629,6 @@ addresses[1] &&
 
 
 
-
-
 <div className="price-box">
 
 
@@ -769,25 +642,17 @@ Precio estimado
 <p>
 
 Distancia:
-
-{distance}
-
-km
+{distance} km
 
 </p>
-
 
 
 <p>
 
 Precio:
-
-{price}
-
-CUP
+{price} CUP
 
 </p>
-
 
 
 </div>
@@ -801,17 +666,15 @@ CUP
 
 
 {
+currentOrder?.status==="Buscando mensajero" &&
 
-currentOrder?.status==="Buscando mensajero"
-
-&&
 
 <div className="searching-box">
 
 
 <h2>
 
-🔎 Buscando mensajeros
+🔎 Buscando mensajero
 
 </h2>
 
@@ -823,8 +686,20 @@ Tu pedido está disponible.
 </p>
 
 
-</div>
+<button
 
+className="danger"
+
+onClick={cancelCurrentOrder}
+
+>
+
+Cancelar pedido
+
+</button>
+
+
+</div>
 
 }
 
@@ -837,13 +712,10 @@ Tu pedido está disponible.
 
 
 {
+currentOrder?.status==="Mensajero asignado" &&
 
-currentOrder?.status==="Mensajero asignado"
-
-&&
 
 <div className="messenger-found">
-
 
 <h2>
 
@@ -852,22 +724,16 @@ currentOrder?.status==="Mensajero asignado"
 </h2>
 
 
-
 <p>
-
-Mensajero:
 
 {currentOrder.messenger}
 
 </p>
 
 
-
 <p>
 
-🚘
-
-{
+🚘 {
 
 messengerUser?.vehicle ||
 
@@ -880,9 +746,7 @@ currentOrder.messengerVehicle ||
 </p>
 
 
-
 </div>
-
 
 }
 
@@ -895,51 +759,10 @@ currentOrder.messengerVehicle ||
 
 
 {
+currentOrder?.status==="En camino" &&
 
-currentOrder?.status==="Recogiendo pedido"
-
-&&
 
 <div className="messenger-found">
-
-
-<h2>
-
-📦 Recogiendo pedido
-
-</h2>
-
-
-<p>
-
-{currentOrder.messenger}
-
-está recogiendo tu envío.
-
-</p>
-
-
-</div>
-
-
-}
-
-
-
-
-
-
-
-
-
-{
-
-currentOrder?.status==="En camino"
-
-&&
-
-<div className="messenger-found">
-
 
 <h2>
 
@@ -947,18 +770,13 @@ currentOrder?.status==="En camino"
 
 </h2>
 
-
 <p>
-
-Mensajero:
 
 {currentOrder.messenger}
 
 </p>
 
-
 </div>
-
 
 }
 
@@ -971,44 +789,8 @@ Mensajero:
 
 
 {
-
-currentOrder?.status==="Entregado"
-
-&&
-
-<div className="messenger-found">
-
-
-<h2>
-
-✅ Entregado
-
-</h2>
-
-
-<p>
-
-Pedido completado.
-
-</p>
-
-
-</div>
-
-
-}
-
-
-
-
-
-
-
-
-
-{
-
-!searching && !currentOrder &&
+!searching &&
+!currentOrder &&
 
 
 <button
@@ -1023,15 +805,13 @@ Solicitar mensajero
 
 </button>
 
-
 }
 
 
 
-
-
-
 </section>
+
+
 
 
 
@@ -1047,6 +827,7 @@ onClick={()=>setShowPanel(!showPanel)}
 
 >
 
+
 {
 
 showPanel
@@ -1061,10 +842,8 @@ showPanel
 
 }
 
+
 </button>
-
-
-
 
 
 
@@ -1075,12 +854,10 @@ showPanel
 
 </>
 
-
 )
 
 
 }
-
 
 
 export default Client

@@ -12,11 +12,9 @@ import {
   toggleSupabaseUserActive
 } from "../data/supabaseUsers"
 
-
 import type {
   SupabaseUser
 } from "../data/supabaseUsers"
-
 
 
 import {
@@ -26,18 +24,15 @@ import {
   deleteOrder
 } from "../data/orders"
 
-
 import type {
   Order,
   OrderStatus
 } from "../data/orders"
 
 
-
 import {
   getCurrentUser
 } from "../data/auth"
-
 
 
 
@@ -52,8 +47,8 @@ const admin = getCurrentUser()
 
 const [users,setUsers] = useState<SupabaseUser[]>([])
 
-
 const [orders,setOrders] = useState<Order[]>([])
+
 
 
 
@@ -62,12 +57,21 @@ const [orders,setOrders] = useState<Order[]>([])
 
 async function loadUsers(){
 
- const data = await getSupabaseUsers()
+try{
 
- setUsers(data)
+const data = await getSupabaseUsers()
+
+setUsers(data)
 
 }
 
+catch(error){
+
+console.error(error)
+
+}
+
+}
 
 
 
@@ -76,11 +80,22 @@ async function loadUsers(){
 
 async function loadOrders(){
 
- const data = await getOrders()
+try{
 
- setOrders(data)
+const data = await getOrders()
+
+setOrders(data)
 
 }
+
+catch(error){
+
+console.error(error)
+
+}
+
+}
+
 
 
 
@@ -90,9 +105,9 @@ async function loadOrders(){
 
 async function refresh(){
 
- await loadUsers()
+await loadUsers()
 
- await loadOrders()
+await loadOrders()
 
 }
 
@@ -104,18 +119,19 @@ async function refresh(){
 
 useEffect(()=>{
 
+
 refresh()
 
 
-const timer = setInterval(()=>{
+const timer=setInterval(()=>{
 
- refresh()
+refresh()
 
 },3000)
 
 
 
-return ()=>clearInterval(timer)
+return()=>clearInterval(timer)
 
 
 },[])
@@ -127,43 +143,38 @@ return ()=>clearInterval(timer)
 
 
 
+async function blockUser(id:number){
+
+await toggleSupabaseUserActive(id)
+
+refresh()
+
+}
+
+
+
+
+
+
+
 
 async function removeUser(id:number){
 
 
-const confirmDelete = window.confirm(
+const ok=window.confirm(
 "¿Eliminar usuario?"
 )
 
 
-if(!confirmDelete){
+if(!ok){
 
 return
 
 }
 
 
-
 await deleteSupabaseUser(id)
 
-
-refresh()
-
-
-}
-
-
-
-
-
-
-
-
-
-async function blockUser(id:number){
-
-
-await toggleSupabaseUserActive(id)
 
 refresh()
 
@@ -187,10 +198,11 @@ id,
 status
 )
 
+
 refresh()
 
-}
 
+}
 
 
 
@@ -201,12 +213,12 @@ refresh()
 async function removeOrder(id:number){
 
 
-const confirmDelete = window.confirm(
+const ok=window.confirm(
 "¿Eliminar pedido?"
 )
 
 
-if(!confirmDelete){
+if(!ok){
 
 return
 
@@ -230,7 +242,6 @@ refresh()
 
 return(
 
-
 <>
 
 
@@ -238,24 +249,26 @@ return(
 
 
 
-<main className="admin-page">
+<main className="admin-dashboard">
 
 
 
+
+
+<header className="admin-header">
 
 
 <h1>
-Panel Administrador
+⚡ Volando Admin
 </h1>
 
 
-
-
 <p>
-Bienvenido {admin?.name}
+Centro de control - {admin?.name}
 </p>
 
 
+</header>
 
 
 
@@ -267,15 +280,17 @@ Bienvenido {admin?.name}
 
 
 
-<div className="card">
 
-<h2>
-Usuarios
-</h2>
 
-<p>
+<div className="admin-stat-card">
+
+<h3>
+👥 Usuarios
+</h3>
+
+<strong>
 {users.length}
-</p>
+</strong>
 
 </div>
 
@@ -283,13 +298,13 @@ Usuarios
 
 
 
-<div className="card">
+<div className="admin-stat-card">
 
-<h2>
-Mensajeros
-</h2>
+<h3>
+🛵 Mensajeros
+</h3>
 
-<p>
+<strong>
 
 {
 users.filter(
@@ -297,7 +312,7 @@ u=>u.role==="mensajero"
 ).length
 }
 
-</p>
+</strong>
 
 </div>
 
@@ -305,13 +320,14 @@ u=>u.role==="mensajero"
 
 
 
-<div className="card">
 
-<h2>
-Clientes
-</h2>
+<div className="admin-stat-card">
 
-<p>
+<h3>
+👤 Clientes
+</h3>
+
+<strong>
 
 {
 users.filter(
@@ -319,7 +335,7 @@ u=>u.role==="cliente"
 ).length
 }
 
-</p>
+</strong>
 
 </div>
 
@@ -327,15 +343,18 @@ u=>u.role==="cliente"
 
 
 
-<div className="card">
 
-<h2>
-Pedidos
-</h2>
+<div className="admin-stat-card">
 
-<p>
+<h3>
+📦 Pedidos
+</h3>
+
+<strong>
+
 {orders.length}
-</p>
+
+</strong>
 
 </div>
 
@@ -351,43 +370,44 @@ Pedidos
 
 
 
+<section className="admin-grid">
+
+
+
+
+
+<div className="admin-box">
+
+
 <h2>
-👥 Usuarios registrados
+👥 Usuarios
 </h2>
-
-
 
 
 
 {
 
-users.length===0 ? (
+users.length===0 ?
 
 <p>
-No hay usuarios registrados.
+No hay usuarios.
 </p>
 
-)
-
 :
+
 
 users.map(user=>(
 
 
 <div
-
-className="card user-card"
-
+className="admin-item"
 key={user.id}
-
 >
-
 
 
 <h3>
 {user.name}
 </h3>
-
 
 
 
@@ -397,9 +417,9 @@ key={user.id}
 
 
 
-
 <p>
-Rol: {user.role}
+Rol:
+{user.role}
 </p>
 
 
@@ -407,16 +427,14 @@ Rol: {user.role}
 
 
 {
-
-user.role==="mensajero" && (
+user.role==="mensajero" &&
 
 <p>
-🛵 {user.vehicle}
+🛵 {user.vehicle || "Sin vehículo"}
 </p>
 
-)
-
 }
+
 
 
 
@@ -447,11 +465,18 @@ user.active !== false
 
 
 
+
+
+<div className="admin-actions">
+
+
 <button
 
 className="primary"
 
-onClick={()=>blockUser(user.id)}
+onClick={()=>
+blockUser(user.id)
+}
 
 >
 
@@ -474,18 +499,23 @@ user.active !== false
 
 
 
-
 <button
 
 className="danger"
 
-onClick={()=>removeUser(user.id)}
+onClick={()=>
+removeUser(user.id)
+}
 
 >
 
 Eliminar
 
 </button>
+
+
+</div>
+
 
 
 
@@ -498,34 +528,37 @@ Eliminar
 }
 
 
+</div>
 
 
 
 
 
+
+
+
+
+<div className="admin-box">
 
 
 <h2>
-📦 Pedidos actuales
+📦 Pedidos
 </h2>
-
-
-
 
 
 
 
 {
 
-orders.length===0 ? (
+orders.length===0 ?
 
 <p>
 No hay pedidos.
 </p>
 
-)
 
 :
+
 
 orders.map(order=>(
 
@@ -533,7 +566,7 @@ orders.map(order=>(
 
 <div
 
-className="card order-card"
+className="admin-item"
 
 key={order.id}
 
@@ -541,29 +574,32 @@ key={order.id}
 
 
 
+
 <h3>
+
 Pedido #{order.id}
+
 </h3>
 
 
 
 
 <p>
-👤 Cliente: {order.clientName || "Sin datos"}
+👤 {order.clientName || "Cliente"}
 </p>
 
 
 
 
 <p>
-📏 Distancia: {order.distance} km
+📏 {order.distance} km
 </p>
 
 
 
 
 <p>
-💰 Precio: {order.price} CUP
+💰 {order.price} CUP
 </p>
 
 
@@ -571,8 +607,13 @@ Pedido #{order.id}
 
 
 <p>
-Estado: {order.status}
+Estado:
+<br/>
+<b>
+{order.status}
+</b>
 </p>
+
 
 
 
@@ -583,10 +624,15 @@ Estado: {order.status}
 value={order.status}
 
 onChange={(e)=>
+
 changeOrderStatus(
+
 order.id,
+
 e.target.value as OrderStatus
+
 )
+
 }
 
 >
@@ -631,29 +677,17 @@ Cancelado
 
 
 {
-
-order.messenger && (
-
-<>
+order.messenger &&
 
 <p>
-🛵 Mensajero: {order.messenger}
+
+🛵 {order.messenger}
+
+<br/>
+
+🚗 {order.messengerVehicle}
+
 </p>
-
-
-<p>
-🚗 Vehículo: {order.messengerVehicle}
-</p>
-
-
-<p>
-⭐ Valoración: {order.messengerRating}
-</p>
-
-
-</>
-
-)
 
 }
 
@@ -662,33 +696,44 @@ order.messenger && (
 
 
 
+
+<div className="admin-actions">
+
+
 <button
 
 className="danger"
 
-onClick={()=>cancelOrder(order.id)}
+onClick={()=>
+cancelOrder(order.id)
+}
 
 >
 
-Cancelar pedido
+Cancelar
 
 </button>
 
 
 
-
-
 <button
 
 className="danger"
 
-onClick={()=>removeOrder(order.id)}
+onClick={()=>
+removeOrder(order.id)
+}
 
 >
 
 Eliminar
 
 </button>
+
+
+
+</div>
+
 
 
 
@@ -700,7 +745,21 @@ Eliminar
 
 ))
 
+
 }
+
+
+
+
+
+</div>
+
+
+
+
+
+
+</section>
 
 
 
@@ -711,16 +770,12 @@ Eliminar
 
 
 
-
-
 </>
-
 
 )
 
 
 }
-
 
 
 export default Admin

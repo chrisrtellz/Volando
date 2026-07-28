@@ -19,9 +19,6 @@ import L from "leaflet"
 
 
 
-
-
-
 // =========================
 // ICONO RECOGIDA
 // =========================
@@ -50,10 +47,6 @@ const pickupIcon = L.divIcon({
 
 
 
-
-
-
-
 // =========================
 // ICONO ENTREGA
 // =========================
@@ -77,10 +70,6 @@ const destinationIcon = L.divIcon({
   iconAnchor:[22,45]
 
 })
-
-
-
-
 
 
 
@@ -116,8 +105,6 @@ const messengerIcon = L.divIcon({
 
 
 
-
-
 type Point = {
 
   lat:number
@@ -125,10 +112,6 @@ type Point = {
   lng:number
 
 }
-
-
-
-
 
 
 
@@ -158,7 +141,6 @@ type Props = {
 
 
 
-
 // =========================
 // ACTUALIZAR TAMAÑO MAPA
 // =========================
@@ -179,7 +161,7 @@ setTimeout(()=>{
 map.invalidateSize()
 
 
-},200)
+},300)
 
 
 
@@ -200,10 +182,8 @@ return null
 
 
 
-
-
 // =========================
-// CONTROL DEL MAPA
+// CONTROL CLIC MAPA
 // =========================
 
 function MapClick({
@@ -240,9 +220,6 @@ newPoints=[]
 
 
 
-
-
-
 newPoints.push({
 
 lat:e.latlng.lat,
@@ -250,8 +227,6 @@ lat:e.latlng.lat,
 lng:e.latlng.lng
 
 })
-
-
 
 
 
@@ -284,11 +259,6 @@ return null
 
 
 
-
-
-
-
-
 function RealMap({
 
 
@@ -312,7 +282,6 @@ onChange
 
 
 
-
 const havana:[number,number]=[
 
 23.1136,
@@ -320,8 +289,6 @@ const havana:[number,number]=[
 -82.3666
 
 ]
-
-
 
 
 
@@ -339,10 +306,6 @@ point.lat,
 point.lng
 
 ])
-
-
-
-
 
 
 
@@ -387,10 +350,8 @@ points[1].lng
 
 :
 
+
 []
-
-
-
 
 
 
@@ -413,17 +374,23 @@ return(
 center={havana}
 
 
-zoom={13}
+
+zoom={14}
+
+
+
+zoomControl={false}
 
 
 
 style={{
 
 
-height:"100%",
+height:"100vh",
 
 
-width:"100%"
+width:"100vw"
+
 
 
 }}
@@ -431,8 +398,6 @@ width:"100%"
 
 
 >
-
-
 
 
 
@@ -444,22 +409,23 @@ width:"100%"
 
 
 
-
-
 {/* MAPA OSCURO VOLANDO */}
+
 
 
 <TileLayer
 
 
+
 attribution="© OpenStreetMap"
+
 
 
 url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
 
 
-/>
 
+/>
 
 
 
@@ -478,9 +444,6 @@ onChange={onChange}
 
 
 />
-
-
-
 
 
 
@@ -572,11 +535,8 @@ index===0
 
 
 
-
-
-
-
 {/* RUTA REAL */}
+
 
 
 {
@@ -623,11 +583,8 @@ opacity:0.95
 
 
 
-
-
-
-
 {/* LINEA TEMPORAL */}
+
 
 
 {
@@ -680,9 +637,8 @@ opacity:0.8
 
 
 
-
-
 {/* MENSAJERO GPS */}
+
 
 
 {
@@ -712,6 +668,7 @@ icon={messengerIcon}
 >
 
 
+
 <Popup>
 
 🛵 Mensajero en ruta
@@ -727,11 +684,6 @@ icon={messengerIcon}
 )
 
 }
-
-
-
-
-
 
 
 
